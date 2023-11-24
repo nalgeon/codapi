@@ -1,6 +1,6 @@
 # Embeddable code playgrounds
 
-> For education, documentation, and fun.
+_for education, documentation, and fun_ 🎉
 
 Codapi is a platform for embedding interactive code snippets directly into your product documentation, online course, or blog post.
 
@@ -13,7 +13,7 @@ Codapi is a platform for embedding interactive code snippets directly into your 
 │                               │
 │ run ►                         │
 └───────────────────────────────┘
-  ✓ took 387 ms
+  ✓ Done
 ┌───────────────────────────────┐
 │ Hello, World!                 │
 └───────────────────────────────┘
@@ -94,4 +94,4 @@ The software is available under the AGPL License.
 
 ## Stay tuned
 
-[**★ Subscribe**](https://antonz.org/subscribe/) to stay on top of new features.
+★ [**Subscribe**](https://antonz.org/subscribe/) to stay on top of new features.
