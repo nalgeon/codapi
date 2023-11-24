@@ -1,0 +1,41 @@
+name: build
+
+on:
+    push:
+        branches: [main]
+        paths-ignore:
+            - "docs/**"
+            - Makefile
+            - README.md
+    workflow_dispatch:
+
+defaults:
+    run:
+        shell: bash
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Setup Go
+              uses: actions/setup-go@v4
+              with:
+                  go-version: "stable"
+
+            - name: Test and build
+              run: make test build
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v3
+              with:
+                  name: codapi
+                  path: |
+                    build/codapi
+                    images/
+                    *.json
+                    codapi.service
+                    Makefile
+                  retention-days: 7

@@ -1,0 +1,25 @@
+{
+    "python": {
+        "run": {
+            "engine": "docker",
+            "entry": "main.py",
+            "steps": [
+                {
+                    "box": "python",
+                    "command": ["python", "main.py"]
+                }
+            ]
+        },
+        "test": {
+            "engine": "docker",
+            "entry": "test_main.py",
+            "steps": [
+                {
+                    "box": "python",
+                    "command": ["python", "-m", "unittest"],
+                    "noutput": 8192
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "pool_size": 8,
+    "verbose": true,
+    "box": {
+        "memory": 64
+    },
+    "step": {
+        "user": "sandbox"
+    }
+}
