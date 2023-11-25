@@ -25,7 +25,7 @@ Highlights:
 
 -   Supports dozens of playgrounds out of the box, plus custom sandboxes if you need them.
 -   Available as a cloud service and as a self-hosted version.
--   Open source. Uses the AGPL license. Committed to remaining open source forever.
+-   Open source. Uses the permissive Apache-2.0 license.
 -   Lightweight and easy to integrate.
 
 Learn more at [**codapi.org**](https://codapi.org/)
@@ -82,13 +82,15 @@ See [codapi-js](https://github.com/nalgeon/codapi-js) to embed the JavaScript wi
 
 ## Contributing
 
-The project is not currently accepting contributions: I need to figure out licensing first.
+Pull requests are welcome. For new features and improvements, please first open an issue to discuss what you would like to change.
+
+Be sure to add or update tests as appropriate.
 
 ## License
 
-Copyright 2023+ [Anton Zhiyanov](https://antonz.org/).
+Copyright 2023 [Anton Zhiyanov](https://antonz.org/).
 
-The software is available under the AGPL License.
+The software is available under the Apache-2.0 license.
 
 ## Stay tuned
 
