@@ -1,0 +1,32 @@
+name: publish
+
+on:
+    push:
+        tags:
+            - "*"
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Setup Go
+              uses: actions/setup-go@v4
+              with:
+                  go-version: "stable"
+
+            - name: Install dependencies
+              run: go get .
+
+            - name: Release and publish
+              uses: goreleaser/goreleaser-action@v4
+              with:
+                  args: release --clean
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
