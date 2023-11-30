@@ -21,9 +21,6 @@ jobs:
               with:
                   go-version: "stable"
 
-            - name: Install dependencies
-              run: go get .
-
             - name: Release and publish
               uses: goreleaser/goreleaser-action@v4
               with:
