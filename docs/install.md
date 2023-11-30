@@ -26,24 +26,24 @@ docker run hello-world
 
 ```sh
 cd /opt/codapi
-curl -L -o codapi.zip "https://api.github.com/repos/nalgeon/codapi/actions/artifacts/926428361/zip"
-unzip -u codapi.zip
-chmod +x build/codapi
-rm -f codapi.zip
+curl -L -O "https://github.com/nalgeon/codapi/releases/download/0.5.0/codapi_0.5.0_linux_amd64.tar.gz"
+tar xvzf codapi_0.5.0_linux_amd64.tar.gz
+chmod +x codapi
+rm -f codapi_0.5.0_linux_amd64.tar.gz
 ```
 
-6. Build Docker images (as codapi):
+5. Build Docker images (as codapi):
 
 ```sh
 cd /opt/codapi
-make images
+docker build --file images/alpine/Dockerfile --tag codapi/alpine:latest images/alpine/
 ```
 
-7. Verify that Codapi starts without errors (as codapi):
+6. Verify that Codapi starts without errors (as codapi):
 
 ```sh
 cd /opt/codapi
-./build/codapi
+./codapi
 ```
 
 Should print the `alpine` box and the `sh` command:
@@ -58,7 +58,7 @@ Should print the `alpine` box and the `sh` command:
 
 Stop it with Ctrl+C.
 
-8. Configure Codapi as systemd service (as root):
+7. Configure Codapi as systemd service (as root):
 
 ```sh
 mv /opt/codapi/codapi.service /etc/systemd/system/
@@ -82,7 +82,7 @@ codapi.service - Code playgrounds
 ...
 ```
 
-9. Verify that Codapi is working:
+8. Verify that Codapi is working:
 
 ```sh
 curl -H "content-type: application/json" -d '{ "sandbox": "sh", "command": "run", "files": {"": "echo hello" }}' http://localhost:1313/v1/exec
