@@ -23,12 +23,12 @@ Codapi manages sandboxes (isolated execution environments) and provides an API t
 
 Highlights:
 
--   Supports dozens of playgrounds out of the box, plus custom sandboxes if you need them.
+-   Custom sandboxes for any programming language, database, or software.
 -   Available as a cloud service and as a self-hosted version.
 -   Open source. Uses the permissive Apache-2.0 license.
 -   Lightweight and easy to integrate.
 
-Learn more at [**codapi.org**](https://codapi.org/)
+Learn more at [codapi.org](https://codapi.org/)
 
 ## Installation
 
@@ -94,4 +94,4 @@ The software is available under the Apache-2.0 license.
 
 ## Stay tuned
 
-★ [**Subscribe**](https://antonz.org/subscribe/) to stay on top of new features.
+★ [Subscribe](https://antonz.org/subscribe/) to stay on top of new features.
