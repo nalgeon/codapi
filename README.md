@@ -82,7 +82,7 @@ See [codapi-js](https://github.com/nalgeon/codapi-js) to embed the JavaScript wi
 
 ## Contributing
 
-Pull requests are welcome. For new features and improvements, please first open an issue to discuss what you would like to change.
+Contributions are welcome. For anything other than bugfixes, please first open an issue to discuss what you want to change.
 
 Be sure to add or update tests as appropriate.
 
