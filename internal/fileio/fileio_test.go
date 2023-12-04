@@ -3,6 +3,7 @@ package fileio
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 )
 
@@ -53,4 +54,31 @@ func TestCopyFiles(t *testing.T) {
 	if string(data) != string(expected) {
 		t.Errorf("unexpected file content: got %q, want %q", data, expected)
 	}
+}
+
+func TestReadJson(t *testing.T) {
+	type Person struct{ Name string }
+
+	t.Run("valid", func(t *testing.T) {
+		got, err := ReadJson[Person](filepath.Join("testdata", "valid.json"))
+		if err != nil {
+			t.Fatalf("unexpected error %v", err)
+		}
+		want := Person{"alice"}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("expected %v, got %v", want, got)
+		}
+	})
+	t.Run("invalid", func(t *testing.T) {
+		_, err := ReadJson[Person](filepath.Join("testdata", "invalid.json"))
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+	})
+	t.Run("does not exist", func(t *testing.T) {
+		_, err := ReadJson[Person](filepath.Join("testdata", "missing.json"))
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+	})
 }

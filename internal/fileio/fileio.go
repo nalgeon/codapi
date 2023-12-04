@@ -2,6 +2,7 @@
 package fileio
 
 import (
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
@@ -36,4 +37,18 @@ func CopyFiles(pattern string, dstDir string) error {
 	}
 
 	return nil
+}
+
+// ReadJson reads the file and decodes it from JSON.
+func ReadJson[T any](path string) (T, error) {
+	var obj T
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return obj, err
+	}
+	err = json.Unmarshal(data, &obj)
+	if err != nil {
+		return obj, err
+	}
+	return obj, err
 }
