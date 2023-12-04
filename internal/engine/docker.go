@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nalgeon/codapi/config"
-	"github.com/nalgeon/codapi/execy"
-	"github.com/nalgeon/codapi/fileio"
-	"github.com/nalgeon/codapi/logx"
+	"github.com/nalgeon/codapi/internal/config"
+	"github.com/nalgeon/codapi/internal/execy"
+	"github.com/nalgeon/codapi/internal/fileio"
+	"github.com/nalgeon/codapi/internal/logx"
 )
 
 var killTimeout = 5 * time.Second

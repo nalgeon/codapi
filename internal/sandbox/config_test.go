@@ -3,8 +3,8 @@ package sandbox
 import (
 	"testing"
 
-	"github.com/nalgeon/codapi/config"
-	"github.com/nalgeon/codapi/engine"
+	"github.com/nalgeon/codapi/internal/config"
+	"github.com/nalgeon/codapi/internal/engine"
 )
 
 var cfg = &config.Config{

@@ -7,10 +7,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/nalgeon/codapi/config"
-	"github.com/nalgeon/codapi/logx"
-	"github.com/nalgeon/codapi/sandbox"
-	"github.com/nalgeon/codapi/server"
+	"github.com/nalgeon/codapi/internal/config"
+	"github.com/nalgeon/codapi/internal/logx"
+	"github.com/nalgeon/codapi/internal/sandbox"
+	"github.com/nalgeon/codapi/internal/server"
 )
 
 var Version string = "main"

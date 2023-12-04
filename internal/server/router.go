@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/nalgeon/codapi/engine"
-	"github.com/nalgeon/codapi/logx"
-	"github.com/nalgeon/codapi/sandbox"
-	"github.com/nalgeon/codapi/stringx"
+	"github.com/nalgeon/codapi/internal/engine"
+	"github.com/nalgeon/codapi/internal/logx"
+	"github.com/nalgeon/codapi/internal/sandbox"
+	"github.com/nalgeon/codapi/internal/stringx"
 )
 
 // NewRouter creates HTTP routes and handlers for them.

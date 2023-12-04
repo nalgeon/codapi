@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nalgeon/codapi/logx"
+	"github.com/nalgeon/codapi/internal/logx"
 )
 
 // The maximum duration of the server graceful shutdown.

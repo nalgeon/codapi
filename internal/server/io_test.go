@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nalgeon/codapi/engine"
+	"github.com/nalgeon/codapi/internal/engine"
 )
 
 func Test_readJson(t *testing.T) {

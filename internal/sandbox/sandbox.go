@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nalgeon/codapi/engine"
+	"github.com/nalgeon/codapi/internal/engine"
 )
 
 var ErrUnknownSandbox = errors.New("unknown sandbox")

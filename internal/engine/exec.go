@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nalgeon/codapi/execy"
-	"github.com/nalgeon/codapi/logx"
+	"github.com/nalgeon/codapi/internal/execy"
+	"github.com/nalgeon/codapi/internal/logx"
 )
 
 // A Program is an executable program.

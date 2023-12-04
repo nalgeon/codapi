@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nalgeon/codapi/execy"
+	"github.com/nalgeon/codapi/internal/execy"
 )
 
 func TestProgram_Run(t *testing.T) {

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/nalgeon/codapi/engine"
-	"github.com/nalgeon/codapi/execy"
+	"github.com/nalgeon/codapi/internal/engine"
+	"github.com/nalgeon/codapi/internal/execy"
 )
 
 func TestValidate(t *testing.T) {

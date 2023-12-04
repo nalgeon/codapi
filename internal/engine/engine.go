@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/nalgeon/codapi/stringx"
+	"github.com/nalgeon/codapi/internal/stringx"
 )
 
 // A Request initiates code execution.

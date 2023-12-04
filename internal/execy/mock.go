@@ -4,7 +4,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/nalgeon/codapi/logx"
+	"github.com/nalgeon/codapi/internal/logx"
 )
 
 // Mock installs mock outputs for given commands.

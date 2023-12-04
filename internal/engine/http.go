@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/nalgeon/codapi/config"
-	"github.com/nalgeon/codapi/httpx"
-	"github.com/nalgeon/codapi/logx"
+	"github.com/nalgeon/codapi/internal/config"
+	"github.com/nalgeon/codapi/internal/httpx"
+	"github.com/nalgeon/codapi/internal/logx"
 )
 
 // An HTTP engine sends HTTP requests.

@@ -7,10 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nalgeon/codapi/config"
-	"github.com/nalgeon/codapi/engine"
-	"github.com/nalgeon/codapi/execy"
-	"github.com/nalgeon/codapi/sandbox"
+	"github.com/nalgeon/codapi/internal/config"
+	"github.com/nalgeon/codapi/internal/engine"
+	"github.com/nalgeon/codapi/internal/execy"
+	"github.com/nalgeon/codapi/internal/sandbox"
 )
 
 var cfg = &config.Config{
