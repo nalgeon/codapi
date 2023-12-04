@@ -5,15 +5,13 @@ _for education, documentation, and fun_ 🎉
 Codapi is a platform for embedding interactive code snippets directly into your product documentation, online course, or blog post.
 
 ```
-  python
 ┌───────────────────────────────┐
-│ msg = "Hello, World!"         │
-│ print(msg)                    │
+│ def greet(name):              │
+│   print(f"Hello, {name}!")    │
 │                               │
-│                               │
-│ run ►                         │
+│ greet("World")                │
 └───────────────────────────────┘
-  ✓ Done
+  Run ►  Edit  ✓ Done
 ┌───────────────────────────────┐
 │ Hello, World!                 │
 └───────────────────────────────┘
