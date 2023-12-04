@@ -32,9 +32,5 @@ jobs:
               uses: actions/upload-artifact@v3
               with:
                   name: codapi
-                  path: |
-                    build/codapi
-                    configs/
-                    images/
-                    Makefile
+                  path: build/codapi
                   retention-days: 7
