@@ -47,7 +47,7 @@ docker build --file images/python/Dockerfile --tag codapi/python:latest images/p
 
 And register the image as a Codapi _box_ in `configs/boxes.json`:
 
-```json
+```js
 {
     // ...
     "python": {
@@ -56,22 +56,19 @@ And register the image as a Codapi _box_ in `configs/boxes.json`:
 }
 ```
 
-Finally, let's configure what happens when the client executes the `run` command in the `python` sandbox. To do this, we edit `configs/commands.json`:
+Finally, let's configure what happens when the client executes the `run` command in the `python` sandbox. To do this, we create `configs/commands/python.json`:
 
-```json
+```js
 {
-    // ...
-    "python": {
-        "run": {
-            "engine": "docker",
-            "entry": "main.py",
-            "steps": [
-                {
-                    "box": "python",
-                    "command": ["python", "main.py"]
-                }
-            ]
-        }
+    "run": {
+        "engine": "docker",
+        "entry": "main.py",
+        "steps": [
+            {
+                "box": "python",
+                "command": ["python", "main.py"]
+            }
+        ]
     }
 }
 ```
@@ -80,26 +77,23 @@ This is essentially what it says:
 
 > When the client executes the `run` command in the `python` sandbox, save their code to the `main.py` file, then run it in the `python` box (Docker container) using the `python main.py` shell command.
 
-What if we want to add another command (say, `test`) to the same sandbox? Let's edit `configs/commands.json` again:
+What if we want to add another command (say, `test`) to the same sandbox? Let's edit `configs/commands/python.json` again:
 
-```json
+```js
 {
-    // ...
-    "python": {
-        "run": {
-            // ...
-        },
-        "test": {
-            "engine": "docker",
-            "entry": "test_main.py",
-            "steps": [
-                {
-                    "box": "python",
-                    "command": ["python", "-m", "unittest"],
-                    "noutput": 8192
-                }
-            ]
-        }
+    "run": {
+        // ...
+    },
+    "test": {
+        "engine": "docker",
+        "entry": "test_main.py",
+        "steps": [
+            {
+                "box": "python",
+                "command": ["python", "-m", "unittest"],
+                "noutput": 8192
+            }
+        ]
     }
 }
 ```
