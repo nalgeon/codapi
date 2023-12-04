@@ -1,5 +1,7 @@
 # Installing Codapi
 
+Make sure you install Codapi on a separate machine — this is a must for security reasons. Do not store any sensitive data or credentials on this machine. This way, even if someone runs malicious code that somehow escapes the isolated environment, they won't have access to your other machines and data.
+
 Steps for Debian (11/12) or Ubuntu (20.04/22.04).
 
 1. Install necessary packages (as root):
