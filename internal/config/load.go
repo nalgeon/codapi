@@ -3,21 +3,28 @@ package config
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
+)
+
+const (
+	configFilename   = "config.json"
+	boxesFilename    = "boxes.json"
+	commandsFilename = "commands.json"
 )
 
 // Read reads application config from JSON files.
-func Read(cfgPath, boxPath, cmdPath string) (*Config, error) {
-	cfg, err := ReadConfig(cfgPath)
+func Read(path string) (*Config, error) {
+	cfg, err := ReadConfig(filepath.Join(path, configFilename))
 	if err != nil {
 		return nil, err
 	}
 
-	cfg, err = ReadBoxes(cfg, boxPath)
+	cfg, err = ReadBoxes(cfg, filepath.Join(path, boxesFilename))
 	if err != nil {
 		return nil, err
 	}
 
-	cfg, err = ReadCommands(cfg, cmdPath)
+	cfg, err = ReadCommands(cfg, filepath.Join(path, commandsFilename))
 	if err != nil {
 		return nil, err
 	}

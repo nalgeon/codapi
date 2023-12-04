@@ -1,15 +1,11 @@
 package config
 
 import (
-	"path/filepath"
 	"testing"
 )
 
 func TestRead(t *testing.T) {
-	cfgPath := filepath.Join("testdata", "config.json")
-	boxPath := filepath.Join("testdata", "boxes.json")
-	cmdPath := filepath.Join("testdata", "commands.json")
-	cfg, err := Read(cfgPath, boxPath, cmdPath)
+	cfg, err := Read("testdata")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

@@ -11,7 +11,7 @@ builds:
 
 archives:
   - files:
-      - "*.json"
+      - configs/*
       - images/*
       - codapi.service
       - LICENSE

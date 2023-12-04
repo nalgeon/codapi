@@ -42,7 +42,7 @@ func main() {
 	port := flag.Int("port", 1313, "server port")
 	flag.Parse()
 
-	cfg, err := config.Read("config.json", "boxes.json", "commands.json")
+	cfg, err := config.Read("configs")
 	if err != nil {
 		logx.Log("missing config file")
 		os.Exit(1)

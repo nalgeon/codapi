@@ -45,7 +45,7 @@ Build the image:
 docker build --file images/python/Dockerfile --tag codapi/python:latest images/python/
 ```
 
-And register the image as a Codapi _box_ in `boxes.json`:
+And register the image as a Codapi _box_ in `configs/boxes.json`:
 
 ```json
 {
@@ -56,7 +56,7 @@ And register the image as a Codapi _box_ in `boxes.json`:
 }
 ```
 
-Finally, let's configure what happens when the client executes the `run` command in the `python` sandbox. To do this, we edit `commands.json`:
+Finally, let's configure what happens when the client executes the `run` command in the `python` sandbox. To do this, we edit `configs/commands.json`:
 
 ```json
 {
@@ -80,7 +80,7 @@ This is essentially what it says:
 
 > When the client executes the `run` command in the `python` sandbox, save their code to the `main.py` file, then run it in the `python` box (Docker container) using the `python main.py` shell command.
 
-What if we want to add another command (say, `test`) to the same sandbox? Let's edit `commands.json` again:
+What if we want to add another command (say, `test`) to the same sandbox? Let's edit `configs/commands.json` again:
 
 ```json
 {
@@ -104,7 +104,7 @@ What if we want to add another command (say, `test`) to the same sandbox? Let's 
 }
 ```
 
-Besides configuring a different shell command, here we increased the maximum output size to 8Kb, as tests tend to be quite chatty (you can see the default value in `config.json`).
+Besides configuring a different shell command, here we increased the maximum output size to 8Kb, as tests tend to be quite chatty (you can see the default value in `configs/config.json`).
 
 To apply the changed configuration, restart Codapi (as root):
 

@@ -34,8 +34,7 @@ jobs:
                   name: codapi
                   path: |
                     build/codapi
+                    configs/
                     images/
-                    *.json
-                    codapi.service
                     Makefile
                   retention-days: 7
