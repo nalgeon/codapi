@@ -26,7 +26,7 @@ Highlights:
 -   Open source. Uses the permissive Apache-2.0 license.
 -   Lightweight and easy to integrate.
 
-See Codapi in action in [real-world use cases](https://antonz.org/code-examples/).
+For an introduction to Codapi, see this post: [Interactive code examples for fun and profit](https://antonz.org/code-examples/).
 
 ## Installation
 
