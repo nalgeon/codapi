@@ -139,7 +139,7 @@ func (e *Docker) writeFiles(dir string, files Files) error {
 			name = e.cmd.Entry
 		}
 		path := filepath.Join(dir, name)
-		err = os.WriteFile(path, []byte(content), 0444)
+		err = fileio.WriteFile(path, content, 0444)
 		return err == nil
 	})
 	return err

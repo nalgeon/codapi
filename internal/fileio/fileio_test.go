@@ -82,3 +82,59 @@ func TestReadJson(t *testing.T) {
 		}
 	})
 }
+
+func TestWriteFile(t *testing.T) {
+	dir, err := os.MkdirTemp("", "files")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+
+	t.Run("text", func(t *testing.T) {
+		path := filepath.Join(dir, "data.txt")
+		err = WriteFile(path, "hello", 0444)
+		if err != nil {
+			t.Fatalf("expected nil err, got %v", err)
+		}
+		got, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read file: expected nil err, got %v", err)
+		}
+		want := []byte("hello")
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("read file: expected %v, got %v", want, got)
+		}
+	})
+
+	t.Run("binary", func(t *testing.T) {
+		path := filepath.Join(dir, "data.bin")
+		err = WriteFile(path, "data:application/octet-stream;base64,MTIz", 0444)
+		if err != nil {
+			t.Fatalf("expected nil err, got %v", err)
+		}
+		got, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read file: expected nil err, got %v", err)
+		}
+		want := []byte("123")
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("read file: expected %v, got %v", want, got)
+		}
+	})
+
+	t.Run("missing data-url separator", func(t *testing.T) {
+		path := filepath.Join(dir, "data.bin")
+		err = WriteFile(path, "data:application/octet-stream:MTIz", 0444)
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+	})
+
+	t.Run("invalid binary value", func(t *testing.T) {
+		path := filepath.Join(dir, "data.bin")
+		err = WriteFile(path, "data:application/octet-stream;base64,12345", 0444)
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+	})
+}

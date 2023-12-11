@@ -2,10 +2,14 @@
 package fileio
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // CopyFile copies all files matching the pattern
@@ -51,4 +55,26 @@ func ReadJson[T any](path string) (T, error) {
 		return obj, err
 	}
 	return obj, err
+}
+
+// WriteFile writes the file to disk.
+// The content can be text or binary (encoded as a data URL),
+// e.g. data:application/octet-stream;base64,MTIz
+func WriteFile(path, content string, perm fs.FileMode) (err error) {
+	var data []byte
+	if strings.HasPrefix(content, "data:") {
+		// data-url encoded file
+		_, encoded, found := strings.Cut(content, ",")
+		if !found {
+			return errors.New("invalid data-url encoding")
+		}
+		data, err = base64.StdEncoding.DecodeString(encoded)
+		if err != nil {
+			return err
+		}
+	} else {
+		// text file
+		data = []byte(content)
+	}
+	return os.WriteFile(path, data, perm)
 }
