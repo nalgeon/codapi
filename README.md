@@ -1,8 +1,8 @@
-# Embeddable code playgrounds
+# Interactive code examples
 
-_for education, documentation, and fun_ 🎉
+_for documentation, education and fun_ 🎉
 
-Codapi is a platform for embedding interactive code snippets directly into your product documentation, online course, or blog post.
+Codapi is a platform for embedding interactive code snippets directly into your product documentation, online course or blog post.
 
 ```
 ┌───────────────────────────────┐
@@ -21,10 +21,10 @@ Codapi manages sandboxes (isolated execution environments) and provides an API t
 
 Highlights:
 
--   Custom sandboxes for any programming language, database, or software.
--   Available as a cloud service and as a self-hosted version.
--   Open source. Uses the permissive Apache-2.0 license.
+-   Automatically converts static code examples into mini-playgrounds.
 -   Lightweight and easy to integrate.
+-   Sandboxes for any programming language, database, or software.
+-   Open source. Uses the permissive Apache-2.0 license.
 
 For an introduction to Codapi, see this post: [Interactive code examples for fun and profit](https://antonz.org/code-examples/).
 
