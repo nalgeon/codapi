@@ -31,8 +31,8 @@ func Test_enableCORS(t *testing.T) {
 		if w.Header().Get("access-control-allow-origin") != "*" {
 			t.Errorf("invalid access-control-allow-origin")
 		}
-		if w.Header().Get("access-control-allow-method") != "post" {
-			t.Errorf("invalid access-control-allow-method")
+		if w.Header().Get("access-control-allow-methods") != "options, post" {
+			t.Errorf("invalid access-control-allow-methods")
 		}
 		if w.Header().Get("access-control-allow-headers") != "authorization, content-type" {
 			t.Errorf("invalid access-control-allow-headers")

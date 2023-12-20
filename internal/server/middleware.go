@@ -7,7 +7,7 @@ import "net/http"
 func enableCORS(handler func(w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("access-control-allow-origin", "*")
-		w.Header().Set("access-control-allow-method", "post")
+		w.Header().Set("access-control-allow-methods", "options, post")
 		w.Header().Set("access-control-allow-headers", "authorization, content-type")
 		w.Header().Set("access-control-max-age", "3600")
 		if r.Method == http.MethodOptions {
