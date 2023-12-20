@@ -12,13 +12,18 @@ import (
 type Request struct {
 	ID      string `json:"id"`
 	Sandbox string `json:"sandbox"`
+	Version string `json:"version,omitempty"`
 	Command string `json:"command"`
 	Files   Files  `json:"files"`
 }
 
 // GenerateID() sets a unique ID for the request.
 func (r *Request) GenerateID() {
-	r.ID = fmt.Sprintf("%s_%s_%s", r.Sandbox, r.Command, stringx.RandString(8))
+	if r.Version != "" {
+		r.ID = fmt.Sprintf("%s.%s_%s_%s", r.Sandbox, r.Version, r.Command, stringx.RandString(8))
+	} else {
+		r.ID = fmt.Sprintf("%s_%s_%s", r.Sandbox, r.Command, stringx.RandString(8))
+	}
 }
 
 // An Execution is an output from the code execution engine.

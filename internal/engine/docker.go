@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -62,7 +63,7 @@ func (e *Docker) Exec(req Request) Execution {
 
 	// initialization step
 	if e.cmd.Before != nil {
-		out := e.execStep(e.cmd.Before, req.ID, dir, nil)
+		out := e.execStep(e.cmd.Before, req, dir, nil)
 		if !out.OK {
 			return out
 		}
@@ -70,14 +71,14 @@ func (e *Docker) Exec(req Request) Execution {
 
 	// the first step is required
 	first, rest := e.cmd.Steps[0], e.cmd.Steps[1:]
-	out := e.execStep(first, req.ID, dir, req.Files)
+	out := e.execStep(first, req, dir, req.Files)
 
 	// the rest are optional
 	if out.OK && len(rest) > 0 {
 		// each step operates on the results of the previous one,
 		// without using the source files - hence `nil` instead of `files`
 		for _, step := range rest {
-			out = e.execStep(step, req.ID, dir, nil)
+			out = e.execStep(step, req, dir, nil)
 			if !out.OK {
 				break
 			}
@@ -86,7 +87,7 @@ func (e *Docker) Exec(req Request) Execution {
 
 	// cleanup step
 	if e.cmd.After != nil {
-		afterOut := e.execStep(e.cmd.After, req.ID, dir, nil)
+		afterOut := e.execStep(e.cmd.After, req, dir, nil)
 		if out.OK && !afterOut.OK {
 			return afterOut
 		}
@@ -96,25 +97,42 @@ func (e *Docker) Exec(req Request) Execution {
 }
 
 // execStep executes a step using the docker container.
-func (e *Docker) execStep(step *config.Step, reqID, dir string, files Files) Execution {
+func (e *Docker) execStep(step *config.Step, req Request, dir string, files Files) Execution {
 	box := e.cfg.Boxes[step.Box]
-	err := e.copyFiles(box, dir)
+	err := e.validateVersion(box, step, req)
 	if err != nil {
-		err = NewExecutionError("copy files to temp dir", err)
-		return Fail(reqID, err)
+		return Fail(req.ID, err)
 	}
 
-	stdout, stderr, err := e.exec(box, step, reqID, dir, files)
+	err = e.copyFiles(box, dir)
 	if err != nil {
-		return Fail(reqID, err)
+		err = NewExecutionError("copy files to temp dir", err)
+		return Fail(req.ID, err)
+	}
+
+	stdout, stderr, err := e.exec(box, step, req, dir, files)
+	if err != nil {
+		return Fail(req.ID, err)
 	}
 
 	return Execution{
-		ID:     reqID,
+		ID:     req.ID,
 		OK:     true,
 		Stdout: stdout,
 		Stderr: stderr,
 	}
+}
+
+func (e *Docker) validateVersion(box *config.Box, step *config.Step, req Request) error {
+	// If the version is set in the step config, use it.
+	// If the version isn't set in the request, use the latest one.
+	// Otherwise, check that the version in the request is supported
+	// according to the box config.
+	if step.Version == "" && req.Version != "" && !slices.Contains(box.Versions, req.Version) {
+		err := fmt.Errorf("box %s does not support version %s", step.Box, req.Version)
+		return err
+	}
+	return nil
 }
 
 // copyFiles copies box files to the temporary directory.
@@ -147,18 +165,18 @@ func (e *Docker) writeFiles(dir string, files Files) error {
 
 // exec executes the step in the docker container
 // using the files from in the temporary directory.
-func (e *Docker) exec(box *config.Box, step *config.Step, reqID, dir string, files Files) (stdout string, stderr string, err error) {
+func (e *Docker) exec(box *config.Box, step *config.Step, req Request, dir string, files Files) (stdout string, stderr string, err error) {
 	// limit the stdout/stderr size
 	prog := NewProgram(step.Timeout, int64(step.NOutput))
-	args := e.buildArgs(box, step, reqID, dir)
+	args := e.buildArgs(box, step, req, dir)
 
 	if step.Stdin {
 		// pass files to container from stdin
 		stdin := filesReader(files)
-		stdout, stderr, err = prog.RunStdin(stdin, reqID, "docker", args...)
+		stdout, stderr, err = prog.RunStdin(stdin, req.ID, "docker", args...)
 	} else {
 		// pass files to container from temp directory
-		stdout, stderr, err = prog.Run(reqID, "docker", args...)
+		stdout, stderr, err = prog.Run(req.ID, "docker", args...)
 	}
 
 	if err == nil {
@@ -172,11 +190,11 @@ func (e *Docker) exec(box *config.Box, step *config.Step, reqID, dir string, fil
 			// inside the container is not related to the "docker run" process,
 			// and will hang forever after the "docker run" process is killed
 			go func() {
-				err = dockerKill(reqID)
+				err = dockerKill(req.ID)
 				if err == nil {
-					logx.Debug("%s: docker kill ok", reqID)
+					logx.Debug("%s: docker kill ok", req.ID)
 				} else {
-					logx.Log("%s: docker kill failed: %v", reqID, err)
+					logx.Log("%s: docker kill failed: %v", req.ID, err)
 				}
 			}()
 		}
@@ -202,10 +220,10 @@ func (e *Docker) exec(box *config.Box, step *config.Step, reqID, dir string, fil
 }
 
 // buildArgs prepares the arguments for the `docker` command.
-func (e *Docker) buildArgs(box *config.Box, step *config.Step, name, dir string) []string {
+func (e *Docker) buildArgs(box *config.Box, step *config.Step, req Request, dir string) []string {
 	var args []string
 	if step.Action == actionRun {
-		args = dockerRunArgs(box, step, name, dir)
+		args = dockerRunArgs(box, step, req, dir)
 	} else if step.Action == actionExec {
 		args = dockerExecArgs(step)
 	} else {
@@ -213,17 +231,17 @@ func (e *Docker) buildArgs(box *config.Box, step *config.Step, name, dir string)
 		args = []string{"version"}
 	}
 
-	command := expandVars(step.Command, name)
+	command := expandVars(step.Command, req.ID)
 	args = append(args, command...)
 	logx.Debug("%v", args)
 	return args
 }
 
 // buildArgs prepares the arguments for the `docker run` command.
-func dockerRunArgs(box *config.Box, step *config.Step, name, dir string) []string {
+func dockerRunArgs(box *config.Box, step *config.Step, req Request, dir string) []string {
 	args := []string{
 		actionRun, "--rm",
-		"--name", name,
+		"--name", req.ID,
 		"--runtime", box.Runtime,
 		"--cpus", strconv.Itoa(box.CPU),
 		"--memory", fmt.Sprintf("%dm", box.Memory),
@@ -255,7 +273,17 @@ func dockerRunArgs(box *config.Box, step *config.Step, name, dir string) []strin
 	for _, lim := range box.Ulimit {
 		args = append(args, "--ulimit", lim)
 	}
-	args = append(args, box.Image)
+
+	if step.Version != "" {
+		// if the version is set in the step config, use it
+		args = append(args, box.Image+":"+step.Version)
+	} else if req.Version != "" {
+		// if the version is set in the request, use it
+		args = append(args, box.Image+":"+req.Version)
+	} else {
+		// otherwise, use the latest version
+		args = append(args, box.Image)
+	}
 	return args
 }
 

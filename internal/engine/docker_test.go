@@ -11,6 +11,25 @@ import (
 
 var dockerCfg = &config.Config{
 	Boxes: map[string]*config.Box{
+		"alpine": {
+			Image:   "codapi/alpine",
+			Runtime: "runc",
+			Host: config.Host{
+				CPU: 1, Memory: 64, Network: "none",
+				Volume: "%s:/sandbox:ro",
+				NProc:  64,
+			},
+		},
+		"go": {
+			Image:   "codapi/go",
+			Runtime: "runc",
+			Host: config.Host{
+				CPU: 1, Memory: 64, Network: "none",
+				Volume: "%s:/sandbox:ro",
+				NProc:  64,
+			},
+			Versions: []string{"dev"},
+		},
 		"postgresql": {
 			Image:   "codapi/postgresql",
 			Runtime: "runc",
@@ -28,9 +47,28 @@ var dockerCfg = &config.Config{
 				Volume: "%s:/sandbox:ro",
 				NProc:  64,
 			},
+			Versions: []string{"dev"},
 		},
 	},
 	Commands: map[string]config.SandboxCommands{
+		"go": map[string]*config.Command{
+			"run": {
+				Engine: "docker",
+				Steps: []*config.Step{
+					{
+						Box: "go", User: "sandbox", Action: "run",
+						Command: []string{"go", "build"},
+						NOutput: 4096,
+					},
+					{
+						Box: "alpine", Version: "latest",
+						User: "sandbox", Action: "run",
+						Command: []string{"./main"},
+						NOutput: 4096,
+					},
+				},
+			},
+		},
 		"postgresql": map[string]*config.Command{
 			"run": {
 				Engine: "docker",
@@ -75,9 +113,10 @@ func TestDockerRun(t *testing.T) {
 		"docker run": {Stdout: "hello world", Stderr: "", Err: nil},
 	}
 	mem := execy.Mock(commands)
-	engine := NewDocker(dockerCfg, "python", "run")
 
 	t.Run("success", func(t *testing.T) {
+		mem.Clear()
+		engine := NewDocker(dockerCfg, "python", "run")
 		req := Request{
 			ID:      "http_42",
 			Sandbox: "python",
@@ -103,7 +142,87 @@ func TestDockerRun(t *testing.T) {
 		if out.Err != nil {
 			t.Errorf("Err: expected nil, got %v", out.Err)
 		}
+		mem.MustHave(t, "codapi/python")
 		mem.MustHave(t, "python main.py")
+	})
+
+	t.Run("latest version", func(t *testing.T) {
+		mem.Clear()
+		engine := NewDocker(dockerCfg, "python", "run")
+		req := Request{
+			ID:      "http_42",
+			Sandbox: "python",
+			Command: "run",
+			Files: map[string]string{
+				"": "print('hello world')",
+			},
+		}
+		out := engine.Exec(req)
+		if !out.OK {
+			t.Error("OK: expected true")
+		}
+		mem.MustHave(t, "codapi/python")
+	})
+
+	t.Run("custom version", func(t *testing.T) {
+		mem.Clear()
+		engine := NewDocker(dockerCfg, "python", "run")
+		req := Request{
+			ID:      "http_42",
+			Sandbox: "python",
+			Version: "dev",
+			Command: "run",
+			Files: map[string]string{
+				"": "print('hello world')",
+			},
+		}
+		out := engine.Exec(req)
+		if !out.OK {
+			t.Error("OK: expected true")
+		}
+		mem.MustHave(t, "codapi/python:dev")
+	})
+
+	t.Run("step version", func(t *testing.T) {
+		mem.Clear()
+		engine := NewDocker(dockerCfg, "go", "run")
+		req := Request{
+			ID:      "http_42",
+			Sandbox: "go",
+			Version: "dev",
+			Command: "run",
+			Files: map[string]string{
+				"": "var n = 42",
+			},
+		}
+		out := engine.Exec(req)
+		if !out.OK {
+			t.Error("OK: expected true")
+		}
+		mem.MustHave(t, "codapi/go:dev")
+		mem.MustHave(t, "codapi/alpine:latest")
+	})
+
+	t.Run("unsupported version", func(t *testing.T) {
+		mem.Clear()
+		engine := NewDocker(dockerCfg, "python", "run")
+		req := Request{
+			ID:      "http_42",
+			Sandbox: "python",
+			Version: "42",
+			Command: "run",
+			Files: map[string]string{
+				"": "print('hello world')",
+			},
+		}
+		out := engine.Exec(req)
+		if out.OK {
+			t.Error("OK: expected false")
+		}
+		want := "box python does not support version 42"
+		if out.Stderr != want {
+			t.Errorf("Stderr: unexpected value: %s", out.Stderr)
+		}
 	})
 }
 

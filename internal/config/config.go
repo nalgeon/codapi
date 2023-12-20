@@ -59,7 +59,8 @@ type Box struct {
 	Runtime string `json:"runtime"`
 	Host
 
-	Files []string `json:"files"`
+	Versions []string `json:"versions"`
+	Files    []string `json:"files"`
 }
 
 // A Host describes container Host attributes.
@@ -96,6 +97,7 @@ type Command struct {
 // A Step describes a single step of a command.
 type Step struct {
 	Box     string   `json:"box"`
+	Version string   `json:"version"`
 	User    string   `json:"user"`
 	Action  string   `json:"action"`
 	Stdin   bool     `json:"stdin"`

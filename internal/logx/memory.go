@@ -53,9 +53,14 @@ func (m *Memory) MustNotHave(t *testing.T, msg string) {
 	}
 }
 
+// Clear cleares the memory.
+func (m *Memory) Clear() {
+	m.Lines = []string{}
+}
+
 // Print prints memory lines to stdout.
 func (m *Memory) Print() {
 	for _, line := range m.Lines {
-		fmt.Print(line)
+		fmt.Println(line)
 	}
 }

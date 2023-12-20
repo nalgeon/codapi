@@ -4,8 +4,33 @@ import (
 	"errors"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 )
+
+func TestGenerateID(t *testing.T) {
+	t.Run("with version", func(t *testing.T) {
+		req := Request{
+			Sandbox: "python",
+			Version: "dev",
+			Command: "run",
+		}
+		req.GenerateID()
+		if !strings.HasPrefix(req.ID, "python.dev_run_") {
+			t.Errorf("ID: unexpected prefix %s", req.ID)
+		}
+	})
+	t.Run("without version", func(t *testing.T) {
+		req := Request{
+			Sandbox: "python",
+			Command: "run",
+		}
+		req.GenerateID()
+		if !strings.HasPrefix(req.ID, "python_run_") {
+			t.Errorf("ID: unexpected prefix %s", req.ID)
+		}
+	})
+}
 
 func TestExecutionError(t *testing.T) {
 	inner := errors.New("inner error")
