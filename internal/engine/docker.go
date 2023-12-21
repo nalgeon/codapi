@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -98,8 +97,7 @@ func (e *Docker) Exec(req Request) Execution {
 
 // execStep executes a step using the docker container.
 func (e *Docker) execStep(step *config.Step, req Request, dir string, files Files) Execution {
-	box := e.cfg.Boxes[step.Box]
-	err := e.validateVersion(box, step, req)
+	box, err := e.getBox(step, req)
 	if err != nil {
 		return Fail(req.ID, err)
 	}
@@ -123,16 +121,33 @@ func (e *Docker) execStep(step *config.Step, req Request, dir string, files File
 	}
 }
 
-func (e *Docker) validateVersion(box *config.Box, step *config.Step, req Request) error {
-	// If the version is set in the step config, use it.
-	// If the version isn't set in the request, use the latest one.
-	// Otherwise, check that the version in the request is supported
-	// according to the box config.
-	if step.Version == "" && req.Version != "" && !slices.Contains(box.Versions, req.Version) {
-		err := fmt.Errorf("box %s does not support version %s", step.Box, req.Version)
-		return err
+// getBox selects an appropriate box for the step (if any).
+func (e *Docker) getBox(step *config.Step, req Request) (*config.Box, error) {
+	if step.Action == actionExec {
+		// exec steps use existing instances
+		// and do not spin up new boxes
+		return nil, nil
 	}
-	return nil
+	var boxName string
+	// If the version is set in the step config, use it.
+	if step.Version != "" {
+		if step.Version == "latest" {
+			boxName = step.Box
+		} else {
+			boxName = step.Box + ":" + step.Version
+		}
+	} else if req.Version != "" {
+		// If the version is set in the request, use it.
+		boxName = step.Box + ":" + req.Version
+	} else {
+		// otherwise, use the latest version
+		boxName = step.Box
+	}
+	box, found := e.cfg.Boxes[boxName]
+	if !found {
+		return nil, fmt.Errorf("unknown box %s", boxName)
+	}
+	return box, nil
 }
 
 // copyFiles copies box files to the temporary directory.
@@ -273,17 +288,7 @@ func dockerRunArgs(box *config.Box, step *config.Step, req Request, dir string) 
 	for _, lim := range box.Ulimit {
 		args = append(args, "--ulimit", lim)
 	}
-
-	if step.Version != "" {
-		// if the version is set in the step config, use it
-		args = append(args, box.Image+":"+step.Version)
-	} else if req.Version != "" {
-		// if the version is set in the request, use it
-		args = append(args, box.Image+":"+req.Version)
-	} else {
-		// otherwise, use the latest version
-		args = append(args, box.Image)
-	}
+	args = append(args, box.Image)
 	return args
 }
 

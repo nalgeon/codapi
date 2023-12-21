@@ -59,8 +59,7 @@ type Box struct {
 	Runtime string `json:"runtime"`
 	Host
 
-	Versions []string `json:"versions"`
-	Files    []string `json:"files"`
+	Files []string `json:"files"`
 }
 
 // A Host describes container Host attributes.

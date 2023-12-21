@@ -28,10 +28,9 @@ var dockerCfg = &config.Config{
 				Volume: "%s:/sandbox:ro",
 				NProc:  64,
 			},
-			Versions: []string{"dev"},
 		},
-		"postgresql": {
-			Image:   "codapi/postgresql",
+		"go:dev": {
+			Image:   "codapi/go:dev",
 			Runtime: "runc",
 			Host: config.Host{
 				CPU: 1, Memory: 64, Network: "none",
@@ -47,7 +46,15 @@ var dockerCfg = &config.Config{
 				Volume: "%s:/sandbox:ro",
 				NProc:  64,
 			},
-			Versions: []string{"dev"},
+		},
+		"python:dev": {
+			Image:   "codapi/python:dev",
+			Runtime: "runc",
+			Host: config.Host{
+				CPU: 1, Memory: 64, Network: "none",
+				Volume: "%s:/sandbox:ro",
+				NProc:  64,
+			},
 		},
 	},
 	Commands: map[string]config.SandboxCommands{
@@ -200,7 +207,7 @@ func TestDockerRun(t *testing.T) {
 			t.Error("OK: expected true")
 		}
 		mem.MustHave(t, "codapi/go:dev")
-		mem.MustHave(t, "codapi/alpine:latest")
+		mem.MustHave(t, "codapi/alpine")
 	})
 
 	t.Run("unsupported version", func(t *testing.T) {
@@ -219,7 +226,7 @@ func TestDockerRun(t *testing.T) {
 		if out.OK {
 			t.Error("OK: expected false")
 		}
-		want := "box python does not support version 42"
+		want := "unknown box python:42"
 		if out.Stderr != want {
 			t.Errorf("Stderr: unexpected value: %s", out.Stderr)
 		}
