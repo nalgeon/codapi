@@ -156,7 +156,7 @@ func (e *Docker) copyFiles(box *config.Box, dir string) error {
 		return nil
 	}
 	for _, pattern := range box.Files {
-		err := fileio.CopyFiles(pattern, dir)
+		err := fileio.CopyFiles(pattern, dir, 0444)
 		if err != nil {
 			return err
 		}

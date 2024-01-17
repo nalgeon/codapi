@@ -14,7 +14,7 @@ import (
 
 // CopyFile copies all files matching the pattern
 // to the destination directory.
-func CopyFiles(pattern string, dstDir string) error {
+func CopyFiles(pattern string, dstDir string, perm fs.FileMode) error {
 	matches, err := filepath.Glob(pattern)
 	if err != nil {
 		return err
@@ -28,7 +28,7 @@ func CopyFiles(pattern string, dstDir string) error {
 		defer src.Close()
 
 		dstFile := filepath.Join(dstDir, filepath.Base(match))
-		dst, err := os.Create(dstFile)
+		dst, err := os.OpenFile(dstFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, perm)
 		if err != nil {
 			return err
 		}

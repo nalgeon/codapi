@@ -1,6 +1,7 @@
 package fileio
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -30,17 +31,21 @@ func TestCopyFiles(t *testing.T) {
 	defer os.RemoveAll(dstDir)
 
 	// Call the CopyFiles function
+	const perm = fs.FileMode(0444)
 	pattern := filepath.Join(srcDir, "*.txt")
-	err = CopyFiles(pattern, dstDir)
+	err = CopyFiles(pattern, dstDir, perm)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Verify that the file was copied correctly
 	dstFile := filepath.Join(dstDir, "source.txt")
-	_, err = os.Stat(dstFile)
+	fileInfo, err := os.Stat(dstFile)
 	if err != nil {
 		t.Fatalf("file not copied: %s", err)
+	}
+	if fileInfo.Mode() != perm {
+		t.Errorf("unexpected file permissions: got %v, want %v", fileInfo.Mode(), perm)
 	}
 
 	// Read the contents of the copied file
@@ -119,6 +124,22 @@ func TestWriteFile(t *testing.T) {
 		want := []byte("123")
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("read file: expected %v, got %v", want, got)
+		}
+	})
+
+	t.Run("perm", func(t *testing.T) {
+		const perm = fs.FileMode(0444)
+		path := filepath.Join(dir, "perm.txt")
+		err = WriteFile(path, "hello", perm)
+		if err != nil {
+			t.Fatalf("expected nil err, got %v", err)
+		}
+		fileInfo, err := os.Stat(path)
+		if err != nil {
+			t.Fatalf("file not created: %s", err)
+		}
+		if fileInfo.Mode() != perm {
+			t.Errorf("unexpected file permissions: got %v, want %v", fileInfo.Mode(), perm)
 		}
 	})
 
