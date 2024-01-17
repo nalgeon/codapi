@@ -13,11 +13,16 @@ import (
 	"github.com/nalgeon/codapi/internal/server"
 )
 
-var Version string = "main"
+// set by the build process
+var (
+	version = "main"
+	commit  = "none"
+	date    = "unknown"
+)
 
 // startServer starts the HTTP API sandbox server.
 func startServer(port int) *server.Server {
-	logx.Log("codapi %s", Version)
+	logx.Log("codapi %s, commit %s, built at %s", version, commit, date)
 	logx.Log("listening on port %d...", port)
 	router := server.NewRouter()
 	srv := server.NewServer(port, router)

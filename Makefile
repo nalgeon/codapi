@@ -6,9 +6,7 @@ build_rev := "main"
 ifneq ($(wildcard .git),)
 	build_rev := $(shell git rev-parse --short HEAD)
 endif
-
-build_date := $(shell date -u '+%Y%m%d')
-version := $(build_date):$(build_rev)
+build_date := $(shell date -u '+%Y-%m-%dT%H:%M:%S')
 
 setup:
 	@go mod download
@@ -24,7 +22,7 @@ test:
 
 
 build:
-	@go build -ldflags "-X main.Version=$(version)" -o build/codapi -v cmd/main.go
+	@go build -ldflags "-X main.commit=$(build_rev) -X main.date=$(build_date)" -o build/codapi -v cmd/main.go
 
 run:
 	@./build/codapi
