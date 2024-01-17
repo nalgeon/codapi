@@ -128,7 +128,7 @@ func TestWriteFile(t *testing.T) {
 	})
 
 	t.Run("perm", func(t *testing.T) {
-		const perm = fs.FileMode(0444)
+		const perm = 0444
 		path := filepath.Join(dir, "perm.txt")
 		err = WriteFile(path, "hello", perm)
 		if err != nil {
@@ -138,8 +138,8 @@ func TestWriteFile(t *testing.T) {
 		if err != nil {
 			t.Fatalf("file not created: %s", err)
 		}
-		if fileInfo.Mode() != perm {
-			t.Errorf("unexpected file permissions: got %v, want %v", fileInfo.Mode(), perm)
+		if fileInfo.Mode().Perm() != perm {
+			t.Errorf("unexpected file permissions: expected %o, got %o", perm, fileInfo.Mode().Perm())
 		}
 	})
 
@@ -156,6 +156,42 @@ func TestWriteFile(t *testing.T) {
 		err = WriteFile(path, "data:application/octet-stream;base64,12345", 0444)
 		if err == nil {
 			t.Fatal("expected error, got nil")
+		}
+	})
+}
+
+func TestMkdirTemp(t *testing.T) {
+	t.Run("default permissions", func(t *testing.T) {
+		const perm = 0755
+		dir, err := MkdirTemp(perm)
+		if err != nil {
+			t.Fatalf("failed to create temp directory: %v", err)
+		}
+		defer os.Remove(dir)
+
+		info, err := os.Stat(dir)
+		if err != nil {
+			t.Fatalf("failed to stat temp directory: %v", err)
+		}
+		if info.Mode().Perm() != perm {
+			t.Errorf("unexpected permissions: expected %o, got %o", perm, info.Mode().Perm())
+		}
+	})
+
+	t.Run("non-default permissions", func(t *testing.T) {
+		const perm = 0777
+		dir, err := MkdirTemp(perm)
+		if err != nil {
+			t.Fatalf("failed to create temp directory: %v", err)
+		}
+		defer os.Remove(dir)
+
+		info, err := os.Stat(dir)
+		if err != nil {
+			t.Fatalf("failed to stat temp directory: %v", err)
+		}
+		if info.Mode().Perm() != perm {
+			t.Errorf("unexpected permissions: expected %o, got %o", perm, info.Mode().Perm())
 		}
 	})
 }

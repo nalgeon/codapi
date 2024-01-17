@@ -78,3 +78,18 @@ func WriteFile(path, content string, perm fs.FileMode) (err error) {
 	}
 	return os.WriteFile(path, data, perm)
 }
+
+// MkdirTemp creates a new temporary directory with given permissions
+// and returns the pathname of the new directory.
+func MkdirTemp(perm fs.FileMode) (string, error) {
+	dir, err := os.MkdirTemp("", "")
+	if err != nil {
+		return "", err
+	}
+	err = os.Chmod(dir, perm)
+	if err != nil {
+		os.Remove(dir)
+		return "", err
+	}
+	return dir, nil
+}

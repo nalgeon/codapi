@@ -42,7 +42,7 @@ func NewDocker(cfg *config.Config, sandbox, command string) Engine {
 // Exec executes the command and returns the output.
 func (e *Docker) Exec(req Request) Execution {
 	// all steps operate in the same temp directory
-	dir, err := os.MkdirTemp("", "")
+	dir, err := fileio.MkdirTemp(0777)
 	if err != nil {
 		err = NewExecutionError("create temp dir", err)
 		return Fail(req.ID, err)
