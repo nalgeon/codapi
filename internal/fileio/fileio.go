@@ -79,6 +79,35 @@ func WriteFile(path, content string, perm fs.FileMode) (err error) {
 	return os.WriteFile(path, data, perm)
 }
 
+// JoinDir joins a directory path with a relative file path,
+// making sure that the resulting path is still inside the directory.
+// Returns an error otherwise.
+func JoinDir(dir string, name string) (string, error) {
+	if dir == "" {
+		return "", errors.New("invalid dir")
+	}
+
+	cleanName := filepath.Clean(name)
+	if cleanName == "" {
+		return "", errors.New("invalid name")
+	}
+	if cleanName == "." || cleanName == "/" || filepath.IsAbs(cleanName) {
+		return "", errors.New("invalid name")
+	}
+
+	path := filepath.Join(dir, cleanName)
+
+	dirPrefix := filepath.Clean(dir)
+	if dirPrefix != "/" {
+		dirPrefix += string(os.PathSeparator)
+	}
+	if !strings.HasPrefix(path, dirPrefix) {
+		return "", errors.New("invalid name")
+	}
+
+	return path, nil
+}
+
 // MkdirTemp creates a new temporary directory with given permissions
 // and returns the pathname of the new directory.
 func MkdirTemp(perm fs.FileMode) (string, error) {

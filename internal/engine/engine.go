@@ -62,6 +62,25 @@ func (err ExecutionError) Unwrap() error {
 	return err.inner
 }
 
+// An ArgumentError is returned if code execution failed
+// due to the invalid value of the request agrument.
+type ArgumentError struct {
+	name   string
+	reason error
+}
+
+func NewArgumentError(name string, reason error) ArgumentError {
+	return ArgumentError{name: name, reason: reason}
+}
+
+func (err ArgumentError) Error() string {
+	return err.name + ": " + err.reason.Error()
+}
+
+func (err ArgumentError) Unwrap() error {
+	return err.reason
+}
+
 // Files are a collection of files to be executed by the engine.
 type Files map[string]string
 

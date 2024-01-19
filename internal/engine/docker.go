@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -54,7 +53,10 @@ func (e *Docker) Exec(req Request) Execution {
 	if e.cmd.Entry != "" {
 		// write request files to the temp directory
 		err = e.writeFiles(dir, req.Files)
-		if err != nil {
+		var argErr ArgumentError
+		if errors.As(err, &argErr) {
+			return Fail(req.ID, err)
+		} else if err != nil {
 			err = NewExecutionError("write files to temp dir", err)
 			return Fail(req.ID, err)
 		}
@@ -171,7 +173,12 @@ func (e *Docker) writeFiles(dir string, files Files) error {
 		if name == "" {
 			name = e.cmd.Entry
 		}
-		path := filepath.Join(dir, name)
+		var path string
+		path, err = fileio.JoinDir(dir, name)
+		if err != nil {
+			err = NewArgumentError(fmt.Sprintf("files[%s]", name), err)
+			return false
+		}
 		err = fileio.WriteFile(path, content, 0444)
 		return err == nil
 	})

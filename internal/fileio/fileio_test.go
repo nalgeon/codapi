@@ -160,6 +160,100 @@ func TestWriteFile(t *testing.T) {
 	})
 }
 
+func TestJoinDir(t *testing.T) {
+	tests := []struct {
+		name     string
+		dir      string
+		filename string
+		want     string
+		wantErr  bool
+	}{
+		{
+			name:     "regular join",
+			dir:      "/home/user",
+			filename: "docs/report.txt",
+			want:     "/home/user/docs/report.txt",
+			wantErr:  false,
+		},
+		{
+			name:     "join with dot",
+			dir:      "/home/user",
+			filename: ".",
+			want:     "",
+			wantErr:  true,
+		},
+		{
+			name:     "join with absolute path",
+			dir:      "/home/user",
+			filename: "/etc/passwd",
+			want:     "",
+			wantErr:  true,
+		},
+		{
+			name:     "join with parent directory",
+			dir:      "/home/user",
+			filename: "../user2/docs/report.txt",
+			want:     "",
+			wantErr:  true,
+		},
+		{
+			name:     "empty directory",
+			dir:      "",
+			filename: "report.txt",
+			want:     "",
+			wantErr:  true,
+		},
+		{
+			name:     "empty filename",
+			dir:      "/home/user",
+			filename: "",
+			want:     "",
+			wantErr:  true,
+		},
+		{
+			name:     "directory with trailing slash",
+			dir:      "/home/user/",
+			filename: "docs/report.txt",
+			want:     "/home/user/docs/report.txt",
+			wantErr:  false,
+		},
+		{
+			name:     "filename with leading slash",
+			dir:      "/home/user",
+			filename: "/docs/report.txt",
+			want:     "",
+			wantErr:  true,
+		},
+		{
+			name:     "root directory",
+			dir:      "/",
+			filename: "report.txt",
+			want:     "/report.txt",
+			wantErr:  false,
+		},
+		{
+			name:     "dot dot slash filename",
+			dir:      "/home/user",
+			filename: "..",
+			want:     "",
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := JoinDir(tt.dir, tt.filename)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("JoinDir() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("JoinDir() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestMkdirTemp(t *testing.T) {
 	t.Run("default permissions", func(t *testing.T) {
 		const perm = 0755

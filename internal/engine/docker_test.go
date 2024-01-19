@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -227,6 +228,29 @@ func TestDockerRun(t *testing.T) {
 			t.Error("OK: expected false")
 		}
 		want := "unknown box python:42"
+		if out.Stderr != want {
+			t.Errorf("Stderr: unexpected value: %s", out.Stderr)
+		}
+	})
+
+	t.Run("directory traversal attack", func(t *testing.T) {
+		mem.Clear()
+		const fileName = "../../opt/codapi/codapi"
+		engine := NewDocker(dockerCfg, "python", "run")
+		req := Request{
+			ID:      "http_42",
+			Sandbox: "python",
+			Command: "run",
+			Files: map[string]string{
+				"":       "print('hello world')",
+				fileName: "hehe",
+			},
+		}
+		out := engine.Exec(req)
+		if out.OK {
+			t.Error("OK: expected false")
+		}
+		want := fmt.Sprintf("files[%s]: invalid name", fileName)
 		if out.Stderr != want {
 			t.Errorf("Stderr: unexpected value: %s", out.Stderr)
 		}
