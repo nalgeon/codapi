@@ -12,8 +12,17 @@ import (
 	"strings"
 )
 
+// Exists checks if the specified path exists.
+func Exists(path string) bool {
+	_, err := os.Stat(path)
+	// we need a double negation here, because
+	// errors.Is(err, os.ErrExist)
+	// does not work
+	return !errors.Is(err, os.ErrNotExist)
+}
+
 // CopyFile copies all files matching the pattern
-// to the destination directory.
+// to the destination directory. Does not overwrite existing file.
 func CopyFiles(pattern string, dstDir string, perm fs.FileMode) error {
 	matches, err := filepath.Glob(pattern)
 	if err != nil {
@@ -28,6 +37,10 @@ func CopyFiles(pattern string, dstDir string, perm fs.FileMode) error {
 		defer src.Close()
 
 		dstFile := filepath.Join(dstDir, filepath.Base(match))
+		if Exists(dstFile) {
+			continue
+		}
+
 		dst, err := os.OpenFile(dstFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, perm)
 		if err != nil {
 			return err

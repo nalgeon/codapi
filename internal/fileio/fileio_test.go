@@ -8,57 +8,119 @@ import (
 	"testing"
 )
 
+func TestExists(t *testing.T) {
+	t.Run("exists", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "file.txt")
+		err := os.WriteFile(path, []byte{1, 2, 3}, 0444)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !Exists(path) {
+			t.Fatalf("Exists: %s does not exist", filepath.Base(path))
+		}
+	})
+	t.Run("does not exist", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "file.txt")
+		if Exists(path) {
+			t.Fatalf("Exists: %s should not exist", filepath.Base(path))
+		}
+	})
+}
+
 func TestCopyFiles(t *testing.T) {
-	// Create a temporary directory for testing
+	// create a temporary directory for testing
 	srcDir, err := os.MkdirTemp("", "src")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(srcDir)
 
-	// Create a source file
+	// create a source file
 	srcFile := filepath.Join(srcDir, "source.txt")
 	err = os.WriteFile(srcFile, []byte("test data"), 0644)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Specify the destination directory
+	// specify the destination directory
 	dstDir, err := os.MkdirTemp("", "dst")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(dstDir)
 
-	// Call the CopyFiles function
-	const perm = fs.FileMode(0444)
-	pattern := filepath.Join(srcDir, "*.txt")
-	err = CopyFiles(pattern, dstDir, perm)
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Run("copy", func(t *testing.T) {
+		// call the CopyFiles function
+		const perm = fs.FileMode(0444)
+		pattern := filepath.Join(srcDir, "*.txt")
+		err = CopyFiles(pattern, dstDir, perm)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	// Verify that the file was copied correctly
-	dstFile := filepath.Join(dstDir, "source.txt")
-	fileInfo, err := os.Stat(dstFile)
-	if err != nil {
-		t.Fatalf("file not copied: %s", err)
-	}
-	if fileInfo.Mode() != perm {
-		t.Errorf("unexpected file permissions: got %v, want %v", fileInfo.Mode(), perm)
-	}
+		// verify that the file was copied correctly
+		dstFile := filepath.Join(dstDir, "source.txt")
+		fileInfo, err := os.Stat(dstFile)
+		if err != nil {
+			t.Fatalf("file not copied: %s", err)
+		}
+		if fileInfo.Mode() != perm {
+			t.Errorf("unexpected file permissions: got %v, want %v", fileInfo.Mode(), perm)
+		}
 
-	// Read the contents of the copied file
-	data, err := os.ReadFile(dstFile)
-	if err != nil {
-		t.Fatal(err)
-	}
+		// read the contents of the copied file
+		data, err := os.ReadFile(dstFile)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	// Verify the contents of the copied file
-	expected := []byte("test data")
-	if string(data) != string(expected) {
-		t.Errorf("unexpected file content: got %q, want %q", data, expected)
-	}
+		// verify the contents of the copied file
+		expected := []byte("test data")
+		if string(data) != string(expected) {
+			t.Errorf("unexpected file content: got %q, want %q", data, expected)
+		}
+	})
+
+	t.Run("skip existing", func(t *testing.T) {
+		// existing file in the destination dir
+		path := filepath.Join(dstDir, "existing.txt")
+		err := os.WriteFile(path, []byte("v1"), 0444)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// same file in the source dir
+		path = filepath.Join(srcDir, "existing.txt")
+		err = os.WriteFile(path, []byte("v2"), 0444)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// copy files
+		pattern := filepath.Join(srcDir, "*.txt")
+		err = CopyFiles(pattern, dstDir, 0444)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// verify that the new file was copied correctly
+		newFile := filepath.Join(dstDir, "source.txt")
+		_, err = os.Stat(newFile)
+		if err != nil {
+			t.Fatalf("new file not copied: %s", err)
+		}
+
+		// verify that the existing file remained unchanged
+		existFile := filepath.Join(dstDir, "existing.txt")
+		data, err := os.ReadFile(existFile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		expected := []byte("v1")
+		if string(data) != string(expected) {
+			t.Error("existing file got overwritten")
+		}
+	})
 }
 
 func TestReadJson(t *testing.T) {
