@@ -300,8 +300,9 @@ func TestDockerExec(t *testing.T) {
 func Test_expandVars(t *testing.T) {
 	const name = "codapi_01"
 	commands := map[string]string{
-		"python main.py":     "python main.py",
-		"sh create.sh :name": "sh create.sh " + name,
+		"python main.py":             "python main.py",
+		"sh create.sh :name":         "sh create.sh " + name,
+		"sh copy.sh :name new-:name": "sh copy.sh " + name + " new-" + name,
 	}
 	for cmd, want := range commands {
 		src := strings.Fields(cmd)
