@@ -173,9 +173,41 @@ func TestWriteFile(t *testing.T) {
 		}
 	})
 
-	t.Run("binary", func(t *testing.T) {
-		path := filepath.Join(dir, "data.bin")
+	t.Run("data-octet-stream", func(t *testing.T) {
+		path := filepath.Join(dir, "data-1.bin")
+		err = WriteFile(path, "data:application/octet-stream;base64,MTIz", 0444)
+		if err != nil {
+			t.Fatalf("expected nil err, got %v", err)
+		}
+		got, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read file: expected nil err, got %v", err)
+		}
+		want := []byte("123")
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("read file: expected %v, got %v", want, got)
+		}
+	})
+
+	t.Run("data-base64", func(t *testing.T) {
+		path := filepath.Join(dir, "data-2.bin")
 		err = WriteFile(path, "data:;base64,MTIz", 0444)
+		if err != nil {
+			t.Fatalf("expected nil err, got %v", err)
+		}
+		got, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read file: expected nil err, got %v", err)
+		}
+		want := []byte("123")
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("read file: expected %v, got %v", want, got)
+		}
+	})
+
+	t.Run("data-text-plain", func(t *testing.T) {
+		path := filepath.Join(dir, "data-3.bin")
+		err = WriteFile(path, "data:text/plain;,123", 0444)
 		if err != nil {
 			t.Fatalf("expected nil err, got %v", err)
 		}
