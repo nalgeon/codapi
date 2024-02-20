@@ -7,6 +7,12 @@ on:
             - "docs/**"
             - Makefile
             - README.md
+    pull_request:
+        branches: [main]
+        paths-ignore:
+            - "docs/**"
+            - Makefile
+            - README.md
     workflow_dispatch:
 
 defaults:
