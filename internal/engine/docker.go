@@ -323,7 +323,7 @@ func expandVars(command []string, name string) []string {
 	expanded := make([]string, len(command))
 	copy(expanded, command)
 	for i, cmd := range expanded {
-		expanded[i] = strings.Replace(cmd, ":name", name, 1)
+		expanded[i] = strings.Replace(cmd, ":name", name, -1)
 	}
 	return expanded
 }
