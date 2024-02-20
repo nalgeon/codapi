@@ -175,7 +175,7 @@ func TestWriteFile(t *testing.T) {
 
 	t.Run("binary", func(t *testing.T) {
 		path := filepath.Join(dir, "data.bin")
-		err = WriteFile(path, "data:application/octet-stream;base64,MTIz", 0444)
+		err = WriteFile(path, "data:;base64,MTIz", 0444)
 		if err != nil {
 			t.Fatalf("expected nil err, got %v", err)
 		}
@@ -215,7 +215,7 @@ func TestWriteFile(t *testing.T) {
 
 	t.Run("invalid binary value", func(t *testing.T) {
 		path := filepath.Join(dir, "data.bin")
-		err = WriteFile(path, "data:application/octet-stream;base64,12345", 0444)
+		err = WriteFile(path, "data:;base64,12345", 0444)
 		if err == nil {
 			t.Fatal("expected error, got nil")
 		}

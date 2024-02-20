@@ -72,10 +72,12 @@ func ReadJson[T any](path string) (T, error) {
 
 // WriteFile writes the file to disk.
 // The content can be text or binary (encoded as a data URL),
-// e.g. data:application/octet-stream;base64,MTIz
+// e.g. data:;base64,MTIz
 func WriteFile(path, content string, perm fs.FileMode) (err error) {
 	var data []byte
-	if strings.HasPrefix(content, "data:") {
+	// TODO: only check for "data:;base64," to comply with RFC 2397.
+	// Remove the "data:" check after the snippet reaches 0.16.
+	if strings.HasPrefix(content, "data:") || strings.HasPrefix(content, "data:;base64,") {
 		// data-url encoded file
 		_, encoded, found := strings.Cut(content, ",")
 		if !found {
