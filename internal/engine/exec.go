@@ -48,7 +48,7 @@ func (p *Program) RunStdin(stdin io.Reader, id, name string, arg ...string) (std
 	cmd.Stdout = LimitWriter(&cmdout, p.nOutput)
 	cmd.Stderr = LimitWriter(&cmderr, p.nOutput)
 	err = execy.Run(cmd)
-	stdout = cmdout.String()
-	stderr = cmderr.String()
+	stdout = strings.TrimSpace(cmdout.String())
+	stderr = strings.TrimSpace(cmderr.String())
 	return
 }
