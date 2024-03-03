@@ -23,6 +23,7 @@ var killTimeout = 5 * time.Second
 const (
 	actionRun  = "run"
 	actionExec = "exec"
+	actionStop = "stop"
 )
 
 // A Docker engine executes a specific sandbox command
@@ -125,9 +126,9 @@ func (e *Docker) execStep(step *config.Step, req Request, dir string, files File
 
 // getBox selects an appropriate box for the step (if any).
 func (e *Docker) getBox(step *config.Step, req Request) (*config.Box, error) {
-	if step.Action == actionExec {
-		// exec steps use existing instances
-		// and do not spin up new boxes
+	if step.Action != actionRun {
+		// steps other than "run" use existing containers
+		// and do not spin up new ones
 		return nil, nil
 	}
 	var boxName string
@@ -244,11 +245,14 @@ func (e *Docker) exec(box *config.Box, step *config.Step, req Request, dir strin
 // buildArgs prepares the arguments for the `docker` command.
 func (e *Docker) buildArgs(box *config.Box, step *config.Step, req Request, dir string) []string {
 	var args []string
-	if step.Action == actionRun {
+	switch step.Action {
+	case actionRun:
 		args = dockerRunArgs(box, step, req, dir)
-	} else if step.Action == actionExec {
-		args = dockerExecArgs(step)
-	} else {
+	case actionExec:
+		args = dockerExecArgs(step, req)
+	case actionStop:
+		args = dockerStopArgs(step, req)
+	default:
 		// should never happen if the config is valid
 		args = []string{"version"}
 	}
@@ -271,11 +275,14 @@ func dockerRunArgs(box *config.Box, step *config.Step, req Request, dir string) 
 		"--pids-limit", strconv.Itoa(box.NProc),
 		"--user", step.User,
 	}
-	if !box.Writable {
-		args = append(args, "--read-only")
+	if step.Detach {
+		args = append(args, "--detach")
 	}
 	if step.Stdin {
 		args = append(args, "--interactive")
+	}
+	if !box.Writable {
+		args = append(args, "--read-only")
 	}
 	if box.Storage != "" {
 		args = append(args, "--storage-opt", fmt.Sprintf("size=%s", box.Storage))
@@ -300,12 +307,21 @@ func dockerRunArgs(box *config.Box, step *config.Step, req Request, dir string) 
 }
 
 // dockerExecArgs prepares the arguments for the `docker exec` command.
-func dockerExecArgs(step *config.Step) []string {
+func dockerExecArgs(step *config.Step, req Request) []string {
+	// :name means executing in the container passed in the request
+	box := strings.Replace(step.Box, ":name", req.ID, 1)
 	return []string{
 		actionExec, "--interactive",
 		"--user", step.User,
-		step.Box,
+		box,
 	}
+}
+
+// dockerStopArgs prepares the arguments for the `docker stop` command.
+func dockerStopArgs(step *config.Step, req Request) []string {
+	// :name means executing in the container passed in the request
+	box := strings.Replace(step.Box, ":name", req.ID, 1)
+	return []string{actionStop, box}
 }
 
 // filesReader creates a reader over an in-memory collection of files.

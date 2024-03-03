@@ -59,6 +59,27 @@ var dockerCfg = &config.Config{
 		},
 	},
 	Commands: map[string]config.SandboxCommands{
+		"alpine": map[string]*config.Command{
+			"echo": {
+				Engine: "docker",
+				Before: &config.Step{
+					Box: "alpine", User: "sandbox", Action: "run", Detach: true,
+					Command: []string{"echo", "before"},
+					NOutput: 4096,
+				},
+				Steps: []*config.Step{
+					{
+						Box: ":name", User: "sandbox", Action: "exec",
+						Command: []string{"sh", "main.sh"},
+						NOutput: 4096,
+					},
+				},
+				After: &config.Step{
+					Box: ":name", User: "sandbox", Action: "stop",
+					NOutput: 4096,
+				},
+			},
+		},
 		"go": map[string]*config.Command{
 			"run": {
 				Engine: "docker",
@@ -294,6 +315,49 @@ func TestDockerExec(t *testing.T) {
 		mem.MustHave(t, "psql -f create.sql")
 		mem.MustHave(t, "psql --user=http_42")
 		mem.MustHave(t, "psql -f drop.sql")
+	})
+}
+
+func TestDockerStop(t *testing.T) {
+	logx.Mock()
+	commands := map[string]execy.CmdOut{
+		"docker run":  {Stdout: "c958ff2", Stderr: "", Err: nil},
+		"docker exec": {Stdout: "hello", Stderr: "", Err: nil},
+		"docker stop": {Stdout: "alpine_42", Stderr: "", Err: nil},
+	}
+	mem := execy.Mock(commands)
+	engine := NewDocker(dockerCfg, "alpine", "echo")
+
+	t.Run("success", func(t *testing.T) {
+		req := Request{
+			ID:      "alpine_42",
+			Sandbox: "alpine",
+			Command: "echo",
+			Files: map[string]string{
+				"": "echo hello",
+			},
+		}
+		out := engine.Exec(req)
+
+		if out.ID != req.ID {
+			t.Errorf("ID: expected %s, got %s", req.ID, out.ID)
+		}
+		if !out.OK {
+			t.Error("OK: expected true")
+		}
+		want := "hello"
+		if out.Stdout != want {
+			t.Errorf("Stdout: expected %q, got %q", want, out.Stdout)
+		}
+		if out.Stderr != "" {
+			t.Errorf("Stderr: expected %q, got %q", "", out.Stdout)
+		}
+		if out.Err != nil {
+			t.Errorf("Err: expected nil, got %v", out.Err)
+		}
+		mem.MustHave(t, "docker run --rm --name alpine_42", "--detach")
+		mem.MustHave(t, "docker exec --interactive --user sandbox alpine_42 sh main.sh")
+		mem.MustHave(t, "docker stop alpine_42")
 	})
 }
 

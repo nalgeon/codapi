@@ -40,4 +40,23 @@ func TestMemory_Has(t *testing.T) {
 	if !mem.Has("hello world") {
 		t.Error("Has: unexpected false")
 	}
+	_, _ = mem.Write([]byte("one two three four"))
+	if !mem.Has("one two") {
+		t.Error("Has: one two: unexpected false")
+	}
+	if !mem.Has("two three") {
+		t.Error("Has: two three: unexpected false")
+	}
+	if mem.Has("one three") {
+		t.Error("Has: one three: unexpected true")
+	}
+	if !mem.Has("one", "three") {
+		t.Error("Has: [one three]: unexpected false")
+	}
+	if !mem.Has("one", "three", "four") {
+		t.Error("Has: [one three four]: unexpected false")
+	}
+	if !mem.Has("four", "three") {
+		t.Error("Has: [four three]: unexpected false")
+	}
 }

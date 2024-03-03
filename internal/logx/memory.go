@@ -30,9 +30,16 @@ func (m *Memory) WriteString(s string) {
 }
 
 // Has returns true if the memory has the message.
-func (m *Memory) Has(msg string) bool {
+func (m *Memory) Has(message ...string) bool {
 	for _, line := range m.Lines {
-		if strings.Contains(line, msg) {
+		containsAll := true
+		for _, part := range message {
+			if !strings.Contains(line, part) {
+				containsAll = false
+				break
+			}
+		}
+		if containsAll {
 			return true
 		}
 	}
@@ -40,16 +47,18 @@ func (m *Memory) Has(msg string) bool {
 }
 
 // MustHave checks if the memory has the message.
-func (m *Memory) MustHave(t *testing.T, msg string) {
-	if !m.Has(msg) {
-		t.Errorf("%s must have: %s", m.Name, msg)
+// If the message consists of several parts,
+// they must all be in the same memory line.
+func (m *Memory) MustHave(t *testing.T, message ...string) {
+	if !m.Has(message...) {
+		t.Errorf("%s must have: %v", m.Name, message)
 	}
 }
 
 // MustNotHave checks if the memory does not have the message.
-func (m *Memory) MustNotHave(t *testing.T, msg string) {
-	if m.Has(msg) {
-		t.Errorf("%s must NOT have: %s", m.Name, msg)
+func (m *Memory) MustNotHave(t *testing.T, message ...string) {
+	if m.Has(message...) {
+		t.Errorf("%s must NOT have: %v", m.Name, message)
 	}
 }
 
