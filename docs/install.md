@@ -28,10 +28,10 @@ docker run hello-world
 
 ```sh
 cd /opt/codapi
-curl -L -O "https://github.com/nalgeon/codapi/releases/download/0.7.1/codapi_0.7.1_linux_amd64.tar.gz"
-tar xvzf codapi_0.7.1_linux_amd64.tar.gz
+curl -L -O "https://github.com/nalgeon/codapi/releases/download/0.8.0/codapi_0.8.0_linux_amd64.tar.gz"
+tar xvzf codapi_0.8.0_linux_amd64.tar.gz
 chmod +x codapi
-rm -f codapi_0.7.1_linux_amd64.tar.gz
+rm -f codapi_0.8.0_linux_amd64.tar.gz
 ```
 
 5. Build Docker images (as codapi):
