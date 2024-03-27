@@ -62,7 +62,7 @@ func (m *Memory) MustNotHave(t *testing.T, message ...string) {
 	}
 }
 
-// Clear cleares the memory.
+// Clear clears the memory.
 func (m *Memory) Clear() {
 	m.Lines = []string{}
 }
