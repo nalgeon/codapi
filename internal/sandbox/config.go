@@ -20,7 +20,7 @@ var engineConstr = map[string]func(*config.Config, string, string) engine.Engine
 }
 
 // engines is the registry of command executors.
-// Each engine executes a specific command in a specifix sandbox.
+// Each engine executes a specific command in a specific sandbox.
 // sandbox : command : engine
 // TODO: Maybe it's better to create a single instance of each engine
 // and pass the sandbox and command as arguments to the Exec.

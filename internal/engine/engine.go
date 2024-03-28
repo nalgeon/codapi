@@ -63,7 +63,7 @@ func (err ExecutionError) Unwrap() error {
 }
 
 // An ArgumentError is returned if code execution failed
-// due to the invalid value of the request agrument.
+// due to the invalid value of the request argument.
 type ArgumentError struct {
 	name   string
 	reason error
