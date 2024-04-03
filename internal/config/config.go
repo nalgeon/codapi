@@ -129,6 +129,9 @@ func setBoxDefaults(box, defs *Box) {
 	if box.Network == "" {
 		box.Network = defs.Network
 	}
+	if !box.Writable {
+		box.Writable = defs.Writable
+	}
 	if box.Volume == "" {
 		box.Volume = defs.Volume
 	}
