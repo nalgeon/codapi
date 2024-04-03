@@ -123,3 +123,94 @@ Which produces the following output:
     "stderr": ""
 }
 ```
+
+## Go
+
+First, let's create a Docker image capable of running Go:
+
+```sh
+cd /opt/codapi
+mkdir images/go
+touch images/go/Dockerfile
+```
+
+Fill the `Dockerfile`:
+
+```Dockerfile
+FROM golang:1.22.1-alpine3.19
+
+RUN adduser --home /sandbox --disabled-password sandbox
+USER sandbox
+WORKDIR /sandbox
+```
+
+Build the image:
+
+```sh
+docker build --file images/go/Dockerfile --tag codapi/go:latest images/go/
+```
+
+And register the image as a Codapi _box_ in `configs/boxes.json`:
+
+```json
+{
+    // ...
+    "go": {
+        "image": "codapi/go",
+        "runtime": "runc",
+        "cpu": 2,
+        "memory": 512,
+        "network": "none",
+        "writable": true,
+        "volume": "%s:/sandbox:rw",
+        "cap_drop": ["all"],
+        "ulimit": ["nofile=96"],
+        "nproc": 64
+    }
+}
+```
+
+Finally, let's configure what happens when the client executes the `run` command in the `go` sandbox. To do this, we create `configs/commands/go.json`:
+
+```json
+{
+    "run": {
+        "engine": "docker",
+        "entry": "main.go",
+        "steps": [
+            {
+                "box": "go",
+                "command": ["go", "run", "main.go"]
+            }
+        ]
+    }
+}
+```
+
+This is essentially what it says:
+
+> When the client executes the `run` command in the `go` sandbox, save their code to the `main.go` file, then run it in the `go` box (Docker container) using the `go run main.go` shell command.
+
+To apply the changed configuration, restart Codapi (as root):
+
+```sh
+systemctl restart codapi.service
+```
+
+And try running some go code:
+
+```sh
+curl -H "content-type: application/json" -d '{"sandbox":"go","version":"","command":"run","files":{"":"package main\nimport (\n    \"fmt\"\n)\n\nfunc main() {\n    fmt.Println(\"hello\")\n}"}}' http://localhost:1313/v1/exec
+```
+
+Which produces the following output:
+
+```json
+{
+    "id": "go_run_f9592410",
+    "ok": true,
+    "duration": 10839,
+    "stdout": "hello",
+    "stderr": ""
+}
+```

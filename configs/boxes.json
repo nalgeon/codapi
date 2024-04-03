@@ -1,5 +1,17 @@
 {
     "alpine": {
         "image": "codapi/alpine"
+    },
+    "go": {
+        "image": "codapi/go",
+        "runtime": "runc",
+        "cpu": 2,
+        "memory": 512,
+        "network": "none",
+        "writable": true,
+        "volume": "%s:/sandbox:rw",
+        "cap_drop": ["all"],
+        "ulimit": ["nofile=96"],
+        "nproc": 64
     }
 }

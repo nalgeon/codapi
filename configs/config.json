@@ -15,7 +15,7 @@
     "step": {
         "user": "sandbox",
         "action": "run",
-        "timeout": 5,
+        "timeout": 30,
         "noutput": 4096
     }
 }

@@ -1,0 +1,12 @@
+{
+    "run": {
+        "engine": "docker",
+        "entry": "main.go",
+        "steps": [
+            {
+                "box": "go",
+                "command": ["go", "run", "main.go"]
+            }
+        ]
+    }
+}
