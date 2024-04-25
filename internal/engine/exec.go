@@ -41,6 +41,19 @@ func (p *Program) RunStdin(stdin io.Reader, id, name string, arg ...string) (std
 	cmd.Cancel = func() error {
 		err := cmd.Process.Kill()
 		logx.Debug("%s: execution timeout, killed process=%d, err=%v", id, cmd.Process.Pid, err)
+		if arg[0] == actionRun {
+			// we have to "docker kill" the container here, because the process
+			// inside the container is not related to the "docker run" process,
+			// and will hang forever after the "docker run" process is killed
+			go func() {
+				err = dockerKill(id)
+				if err == nil {
+					logx.Debug("%s: docker kill ok", id)
+				} else {
+					logx.Log("%s: docker kill failed: %v", id, err)
+				}
+			}()
+		}
 		return err
 	}
 

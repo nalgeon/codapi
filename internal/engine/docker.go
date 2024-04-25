@@ -208,19 +208,6 @@ func (e *Docker) exec(box *config.Box, step *config.Step, req Request, dir strin
 	}
 
 	if err.Error() == "signal: killed" {
-		if step.Action == actionRun {
-			// we have to "docker kill" the container here, because the process
-			// inside the container is not related to the "docker run" process,
-			// and will hang forever after the "docker run" process is killed
-			go func() {
-				err = dockerKill(req.ID)
-				if err == nil {
-					logx.Debug("%s: docker kill ok", req.ID)
-				} else {
-					logx.Log("%s: docker kill failed: %v", req.ID, err)
-				}
-			}()
-		}
 		// context timeout
 		err = ErrTimeout
 		return
