@@ -15,7 +15,7 @@ content-type: application/json
 }
 ```
 
-`sandbox` is the name of the pre-configured sandbox, and `command` is the name of a command supported by that sandbox. See [Adding a sandbox](docs/add-sandbox.md) for details on how to add a new sandbox.
+`sandbox` is the name of the pre-configured sandbox, and `command` is the name of a command supported by that sandbox. See [Adding a sandbox](add-sandbox.md) for details on how to add a new sandbox.
 
 `files` is a map, where the key is a filename and the value is its contents. When executing a single file, it should either be named as the `command` expects, or be an empty string (as in the example above).
 
