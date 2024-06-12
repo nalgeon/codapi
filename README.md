@@ -84,12 +84,12 @@ Contributions are welcome. For anything other than bugfixes, please first open a
 
 Be sure to add or update tests as appropriate.
 
-## License
+## Funding
 
-Copyright 2023 [Anton Zhiyanov](https://antonz.org/).
+Codapi is mostly a [one-man](https://antonz.org/) project, not backed by a VC fund or anything.
 
-The software is available under the Apache-2.0 license.
+If you find Codapi useful, please consider sponsoring it on GitHub. It really helps to move the project forward.
 
-## Stay tuned
+♥ [Become a sponsor](https://github.com/sponsors/nalgeon) to support Codapi.
 
 ★ [Subscribe](https://antonz.org/subscribe/) to stay on top of new features.
