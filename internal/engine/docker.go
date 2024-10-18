@@ -63,6 +63,7 @@ func (e *Docker) Exec(req Request) Execution {
 		}
 	}
 
+	var out Execution
 	// initialization step
 	if e.cmd.Before != nil {
 		out := e.execStep(e.cmd.Before, req, dir, nil)
@@ -73,14 +74,28 @@ func (e *Docker) Exec(req Request) Execution {
 
 	// the first step is required
 	first, rest := e.cmd.Steps[0], e.cmd.Steps[1:]
-	out := e.execStep(first, req, dir, req.Files)
+	tmp := e.execStep(first, req, dir, req.Files)
+	if len(tmp.Stdout) > 0 {
+		out.Stdout = out.Stdout + tmp.Stdout
+	}
+	if len(tmp.Stderr) > 0 {
+		out.Stderr = out.Stderr + tmp.Stderr
+	}
 
 	// the rest are optional
-	if out.OK && len(rest) > 0 {
+	if tmp.OK && len(rest) > 0 {
 		// each step operates on the results of the previous one,
 		// without using the source files - hence `nil` instead of `files`
 		for _, step := range rest {
-			out = e.execStep(step, req, dir, nil)
+			tmp = e.execStep(step, req, dir, nil)
+			if len(tmp.Stdout) > 0 {
+				out.Stdout = out.Stdout + tmp.Stdout
+			}
+			if len(tmp.Stderr) > 0 {
+				out.Stderr = out.Stderr + tmp.Stderr
+			}
+			out.OK = tmp.OK
+			out.ID = tmp.ID
 			if !out.OK {
 				break
 			}
