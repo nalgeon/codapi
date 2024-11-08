@@ -55,6 +55,7 @@ func (cfg *Config) ToJSON() string {
 // A sandbox command can contain multiple steps, each of which runs in a separate box.
 // So the relation sandbox -> box is 1 -> 1+.
 type Box struct {
+	Name    string `json:"name"`
 	Image   string `json:"image"`
 	Runtime string `json:"runtime"`
 	Host

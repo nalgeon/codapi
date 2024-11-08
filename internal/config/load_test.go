@@ -22,6 +22,19 @@ func TestRead(t *testing.T) {
 	if cfg.Step.User != "sandbox" {
 		t.Errorf("Step.User: expected sandbox, got %s", cfg.Step.User)
 	}
+
+	// alpine box
+	if _, ok := cfg.Boxes["custom-alpine"]; !ok {
+		t.Error("Boxes: missing my/alpine box")
+	}
+	if cfg.Boxes["custom-alpine"].Image != "custom/alpine" {
+		t.Errorf(
+			"Boxes[custom-alpine]: expected custom/alpine image, got %s",
+			cfg.Boxes["custom-alpine"].Image,
+		)
+	}
+
+	// python box
 	if _, ok := cfg.Boxes["python"]; !ok {
 		t.Error("Boxes: missing python box")
 	}

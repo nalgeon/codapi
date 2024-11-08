@@ -1,4 +1,4 @@
-FROM alpine:3.18
+FROM alpine:3.20
 
 RUN adduser --home /sandbox --disabled-password sandbox
 

@@ -1,0 +1,4 @@
+{
+    "name": "custom-alpine",
+    "image": "custom/alpine"
+}

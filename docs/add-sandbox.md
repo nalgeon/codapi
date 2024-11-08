@@ -45,14 +45,11 @@ Build the image:
 docker build --file images/python/Dockerfile --tag codapi/python:latest images/python/
 ```
 
-And register the image as a Codapi _box_ in `configs/boxes.json`:
+Then register the image as a Codapi _box_. To do this, we create `configs/boxes/python.json`:
 
 ```js
 {
-    // ...
-    "python": {
-        "image": "codapi/python"
-    }
+    "image": "codapi/python"
 }
 ```
 

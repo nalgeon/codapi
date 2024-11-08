@@ -11,7 +11,7 @@ import (
 
 const (
 	configFilename  = "config.json"
-	boxesFilename   = "boxes.json"
+	boxesDirname    = "boxes"
 	commandsDirname = "commands"
 )
 
@@ -22,7 +22,7 @@ func Read(path string) (*Config, error) {
 		return nil, err
 	}
 
-	cfg, err = ReadBoxes(cfg, filepath.Join(path, boxesFilename))
+	cfg, err = ReadBoxes(cfg, filepath.Join(path, boxesDirname))
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +51,57 @@ func ReadConfig(path string) (*Config, error) {
 	return cfg, err
 }
 
-// ReadBoxes reads boxes config from a JSON file.
+// ReadBoxes reads boxes config from the boxes dir
+// or from the boxes.json file if the boxes dir does not exist.
 func ReadBoxes(cfg *Config, path string) (*Config, error) {
+	var boxes map[string]*Box
+	var err error
+
+	if fileio.Exists(path) {
+		// prefer the boxes dir
+		boxes, err = readBoxesDir(path)
+	} else {
+		// fallback to boxes.json
+		boxes, err = readBoxesFile(path + ".json")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	for _, box := range boxes {
+		setBoxDefaults(box, cfg.Box)
+	}
+
+	cfg.Boxes = boxes
+	return cfg, nil
+
+}
+
+// readBoxesDir reads boxes config from the boxes dir.
+func readBoxesDir(path string) (map[string]*Box, error) {
+	fnames, err := filepath.Glob(filepath.Join(path, "*.json"))
+	if err != nil {
+		return nil, err
+	}
+
+	boxes := make(map[string]*Box, len(fnames))
+	for _, fname := range fnames {
+		box, err := fileio.ReadJson[Box](fname)
+		if err != nil {
+			return nil, err
+		}
+		if box.Name == "" {
+			// use the filename as the box name if it's not set
+			box.Name = strings.TrimSuffix(filepath.Base(fname), ".json")
+		}
+		boxes[box.Name] = &box
+	}
+
+	return boxes, err
+}
+
+// readBoxesFile reads boxes config from the boxes.json file.
+func readBoxesFile(path string) (map[string]*Box, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -64,12 +113,7 @@ func ReadBoxes(cfg *Config, path string) (*Config, error) {
 		return nil, err
 	}
 
-	for _, box := range boxes {
-		setBoxDefaults(box, cfg.Box)
-	}
-
-	cfg.Boxes = boxes
-	return cfg, err
+	return boxes, err
 }
 
 // ReadCommands reads commands config from a JSON file.
