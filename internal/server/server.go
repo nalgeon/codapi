@@ -21,8 +21,8 @@ type Server struct {
 }
 
 // NewServer creates a new Server.
-func NewServer(port int, handler http.Handler) *Server {
-	addr := fmt.Sprintf(":%d", port)
+func NewServer(host string, port int, handler http.Handler) *Server {
+	addr := fmt.Sprintf("%s:%d", host, port)
 	return &Server{
 		srv: &http.Server{Addr: addr, Handler: handler},
 		wg:  &sync.WaitGroup{},

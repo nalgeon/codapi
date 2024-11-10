@@ -22,24 +22,37 @@ var (
 
 // startServer starts the HTTP API sandbox server.
 func startServer(port int) *server.Server {
+	const host = "" // listen on all interfaces
 	logx.Log("codapi %s, commit %s, built at %s", version, commit, date)
-	logx.Log("listening on port %d...", port)
+	logx.Log("listening on 0.0.0.0:%d...", port)
 	router := server.NewRouter()
-	srv := server.NewServer(port, router)
+	srv := server.NewServer(host, port, router)
+	srv.Start()
+	return srv
+}
+
+// startDebug servers the debug handlers.
+func startDebug(port int) *server.Server {
+	const host = "localhost"
+	logx.Log("debugging on localhost:%d...", port)
+	router := server.NewDebug()
+	srv := server.NewServer(host, port, router)
 	srv.Start()
 	return srv
 }
 
 // listenSignals listens for termination signals
 // and performs graceful shutdown.
-func listenSignals(srv *server.Server) {
+func listenSignals(servers []*server.Server) {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	<-sigs
 	logx.Log("stopping...")
-	err := srv.Stop()
-	if err != nil {
-		logx.Log("failed to stop: %v", err)
+	for _, srv := range servers {
+		err := srv.Stop()
+		if err != nil {
+			logx.Log("failed to stop: %v", err)
+		}
 	}
 }
 
@@ -65,5 +78,6 @@ func main() {
 	logx.Log("boxes: %v", cfg.BoxNames())
 	logx.Log("commands: %v", cfg.CommandNames())
 
-	listenSignals(srv)
+	debug := startDebug(6060)
+	listenSignals([]*server.Server{srv, debug})
 }

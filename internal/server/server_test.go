@@ -10,7 +10,7 @@ func TestServer(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	srv := NewServer(8585, handler)
+	srv := NewServer("", 8585, handler)
 	if srv.srv.Addr != ":8585" {
 		t.Fatalf("NewServer: expected port :8585 got %s", srv.srv.Addr)
 	}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/http/pprof"
 
 	"github.com/nalgeon/codapi/internal/engine"
 	"github.com/nalgeon/codapi/internal/logx"
@@ -16,6 +17,17 @@ import (
 func NewRouter() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/exec", enableCORS(exec))
+	return mux
+}
+
+// NewDebug creates HTTP routes for debugging.
+func NewDebug() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	return mux
 }
 
