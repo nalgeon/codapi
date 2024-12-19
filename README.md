@@ -2,6 +2,8 @@
 
 _for documentation, education and fun_ 🎉
 
+[![go-recipes](https://raw.githubusercontent.com/nikolaydubina/go-recipes/main/badge.svg?raw=true)](https://github.com/nikolaydubina/go-recipes)
+
 Codapi is a platform for embedding interactive code snippets directly into your product documentation, online course or blog post.
 
 ```
