@@ -43,7 +43,7 @@ func startDebug(port int) *server.Server {
 
 // listenSignals listens for termination signals
 // and performs graceful shutdown.
-func listenSignals(servers []*server.Server) {
+func listenSignals(servers ...*server.Server) {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	<-sigs
@@ -78,6 +78,10 @@ func main() {
 	logx.Log("boxes: %v", cfg.BoxNames())
 	logx.Log("commands: %v", cfg.CommandNames())
 
-	debug := startDebug(6060)
-	listenSignals([]*server.Server{srv, debug})
+	if cfg.Verbose {
+		debug := startDebug(6060)
+		listenSignals(srv, debug)
+	} else {
+		listenSignals(srv)
+	}
 }
