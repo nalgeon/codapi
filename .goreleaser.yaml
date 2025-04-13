@@ -1,17 +1,17 @@
 builds:
-  - env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - darwin
-    goarch:
-      - amd64
-      - arm64
-    main: ./cmd/main.go
+    - env:
+          - CGO_ENABLED=0
+      goos:
+          - linux
+          - darwin
+      goarch:
+          - amd64
+          - arm64
+      main: ./cmd/main.go
 
 archives:
-  - files:
-      - configs/*
-      - images/*
-      - codapi.service
-      - LICENSE
+    - files:
+          - sandboxes/*
+          - codapi.json
+          - codapi.service
+          - LICENSE
