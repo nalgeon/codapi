@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,11 @@ const (
 	configFilename  = "config.json"
 	boxesDirname    = "boxes"
 	commandsDirname = "commands"
+)
+
+var (
+	ErrMissingBox  = errors.New("missing 'box' section in config.json")
+	ErrMissingStep = errors.New("missing 'step' section in config.json")
 )
 
 // Read reads application config from JSON files.
@@ -46,6 +52,16 @@ func ReadConfig(path string) (*Config, error) {
 	err = json.Unmarshal(data, cfg)
 	if err != nil {
 		return nil, err
+	}
+
+	if cfg.Box == nil {
+		return nil, ErrMissingBox
+	}
+	if cfg.Step == nil {
+		return nil, ErrMissingStep
+	}
+	if cfg.HTTP == nil {
+		cfg.HTTP = &HTTP{}
 	}
 
 	return cfg, err
