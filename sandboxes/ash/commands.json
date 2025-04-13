@@ -1,0 +1,12 @@
+{
+    "run": {
+        "engine": "docker",
+        "entry": "main.sh",
+        "steps": [
+            {
+                "box": "ash",
+                "command": ["sh", "main.sh"]
+            }
+        ]
+    }
+}
