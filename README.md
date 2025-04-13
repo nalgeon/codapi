@@ -2,7 +2,7 @@
 
 _for documentation, education and fun_ 🎉
 
-Codapi is a platform for embedding interactive code snippets directly into your product documentation, online course or blog post.
+Codapi is a platform for embedding interactive code snippets directly into your product documentation, online course or blog post. It's also useful for experimenting with new languages, databases, or tools in a sandbox.
 
 ```
 ┌───────────────────────────────┐
@@ -19,20 +19,44 @@ Codapi is a platform for embedding interactive code snippets directly into your 
 
 Codapi manages sandboxes (isolated execution environments) and provides an API to execute code in these sandboxes. It also provides a JavaScript widget [codapi-js](https://github.com/nalgeon/codapi-js) for easier integration.
 
-Highlights:
-
--   Automatically converts static code examples into mini-playgrounds.
--   Lightweight and easy to integrate.
--   Sandboxes for any programming language, database, or software.
--   Open source. Uses the permissive Apache-2.0 license.
-
 For an introduction to Codapi, see this post: [Interactive code examples for fun and profit](https://antonz.org/code-examples/).
 
 ## Installation
 
-See [Installing Codapi](docs/install.md) for details.
+To run Codapi locally, follow these steps:
+
+1. Install Docker (or Podman/OrbStack) for your operating system.
+2. Install the [latest](https://github.com/nalgeon/codapi/releases/latest) Codapi release (change the `linux_amd64` part according to your OS):
+
+```sh
+mkdir ~/codapi && cd ~/codapi
+curl -L -o codapi.tar.gz "https://github.com/nalgeon/codapi/releases/download/v0.10.0/codapi_0.10.0_linux_amd64.tar.gz"
+tar xvzf codapi.tar.gz
+chmod +x codapi
+rm -f codapi.tar.gz
+```
+
+3. Build the sample `ash` sandbox image:
+
+```sh
+docker build --file sandboxes/ash/Dockerfile --tag codapi/ash:latest sandboxes/ash
+```
+
+4. Start the server:
+
+```sh
+./codapi
+```
+
+Running in production is a bit more involved. See these guides:
+
+-   [Installing Codapi](docs/install.md)
+-   [Updating Codapi](docs/update.md)
+-   [Deploying to production](docs/production.md)
 
 ## Usage
+
+See [Adding a sandbox](docs/add-sandbox.md) to create a custom sandbox.
 
 See [API](docs/api.md) to run sandboxed code using the HTTP API.
 

@@ -3,7 +3,7 @@
 Call `/v1/exec` to run the code in a sandbox:
 
 ```http
-POST https://api.codapi.org/v1/exec
+POST http://localhost:1313/v1/exec
 content-type: application/json
 
 {
@@ -39,4 +39,3 @@ Content-Type: application/json
 -   `duration` is the execution time in milliseconds.
 -   `stdout` is what the code printed to the standard output.
 -   `stderr` is what the code printed to the standard error, or a compiler/os error (if any).
--

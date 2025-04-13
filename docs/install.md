@@ -28,17 +28,17 @@ docker run hello-world
 
 ```sh
 cd /opt/codapi
-curl -L -o codapi.tar.gz "https://github.com/nalgeon/codapi/releases/download/0.9.0/codapi_0.9.0_linux_amd64.tar.gz"
+curl -L -o codapi.tar.gz "https://github.com/nalgeon/codapi/releases/download/v0.10.0/codapi_0.10.0_linux_amd64.tar.gz"
 tar xvzf codapi.tar.gz
 chmod +x codapi
 rm -f codapi.tar.gz
 ```
 
-5. Build Docker images (as codapi):
+5. Build the sample `ash` sandbox image:
 
 ```sh
 cd /opt/codapi
-docker build --file images/alpine/Dockerfile --tag codapi/alpine:latest images/alpine/
+docker build --file sandboxes/ash/Dockerfile --tag codapi/ash:latest sandboxes/ash
 ```
 
 6. Verify that Codapi starts without errors (as codapi):
@@ -48,7 +48,7 @@ cd /opt/codapi
 ./codapi
 ```
 
-Should print the `alpine` box and the `sh` command:
+It should list `ash` in both `boxes` and `commands`:
 
 ```
 2023/09/16 15:18:05 codapi 20230915:691d224
@@ -87,14 +87,14 @@ codapi.service - Code playgrounds
 8. Verify that Codapi is working:
 
 ```sh
-curl -H "content-type: application/json" -d '{ "sandbox": "sh", "command": "run", "files": {"": "echo hello" }}' http://localhost:1313/v1/exec
+curl -H "content-type: application/json" -d '{ "sandbox": "ash", "command": "run", "files": {"": "echo hello" }}' http://localhost:1313/v1/exec
 ```
 
 Should print `ok` = `true`:
 
 ```json
 {
-    "id": "sh_run_dd27ed27",
+    "id": "ash_run_dd27ed27",
     "ok": true,
     "duration": 650,
     "stdout": "hello\n",

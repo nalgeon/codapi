@@ -2,7 +2,7 @@
 
 A _sandbox_ is an isolated execution environment for running code snippets. A sandbox is typically implemented as one or more Docker containers. A sandbox supports at least one _command_ (usually the `run` one), but it can support more (like `test` or any other).
 
-Codapi comes with a single `sh` sandbox preinstalled, but you can easily add others. Let's see some examples.
+Codapi comes with a single `ash` sandbox preinstalled, but you can easily add others. Let's see some examples.
 
 ## Python
 
@@ -10,15 +10,15 @@ First, let's create a Docker image capable of running Python with some third-par
 
 ```sh
 cd /opt/codapi
-mkdir images/python
-touch images/python/Dockerfile
-touch images/python/requirements.txt
+mkdir sandboxes/python
+touch sandboxes/python/Dockerfile
+touch sandboxes/python/requirements.txt
 ```
 
 Fill the `Dockerfile`:
 
 ```Dockerfile
-FROM python:3.11-alpine
+FROM python:3.13-alpine
 
 RUN adduser --home /sandbox --disabled-password sandbox
 
@@ -35,17 +35,17 @@ ENV PYTHONUNBUFFERED=1
 And the `requirements.txt`:
 
 ```
-numpy==1.26.2
-pandas==2.1.3
+numpy
+pandas
 ```
 
 Build the image:
 
 ```sh
-docker build --file images/python/Dockerfile --tag codapi/python:latest images/python/
+docker build --file sandboxes/python/Dockerfile --tag codapi/python:latest sandboxes/python
 ```
 
-Then register the image as a Codapi _box_. To do this, we create `configs/boxes/python.json`:
+Then register the image as a Codapi _box_. To do this, we create `sandboxes/python/box.json`:
 
 ```js
 {
@@ -53,7 +53,7 @@ Then register the image as a Codapi _box_. To do this, we create `configs/boxes/
 }
 ```
 
-Finally, let's configure what happens when the client executes the `run` command in the `python` sandbox. To do this, we create `configs/commands/python.json`:
+Finally, let's configure what happens when the client executes the `run` command in the `python` sandbox. To do this, we create `sandboxes/python/commands.json`:
 
 ```js
 {
@@ -74,7 +74,7 @@ This is essentially what it says:
 
 > When the client executes the `run` command in the `python` sandbox, save their code to the `main.py` file, then run it in the `python` box (Docker container) using the `python main.py` shell command.
 
-What if we want to add another command (say, `test`) to the same sandbox? Let's edit `configs/commands/python.json` again:
+What if we want to add another command (say, `test`) to the same sandbox? Let's edit `sandboxes/python/commands.json` again:
 
 ```js
 {
@@ -95,15 +95,9 @@ What if we want to add another command (say, `test`) to the same sandbox? Let's 
 }
 ```
 
-Besides configuring a different shell command, here we increased the maximum output size to 8Kb, as tests tend to be quite chatty (you can see the default value in `configs/config.json`).
+Besides configuring a different shell command, here we increased the maximum output size to 8Kb, as tests tend to be quite chatty (you can see the default value in `codapi.json`).
 
-To apply the changed configuration, restart Codapi (as root):
-
-```sh
-systemctl restart codapi.service
-```
-
-And try running some Python code:
+To apply the changed configuration, restart Codapi and try running some Python code:
 
 ```sh
 curl -H "content-type: application/json" -d '{ "sandbox": "python", "command": "run", "files": {"": "print(42)" }}' http://localhost:1313/v1/exec

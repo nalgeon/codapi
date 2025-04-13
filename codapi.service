@@ -1,5 +1,5 @@
 [Unit]
-Description=Code playgrounds
+Description=Codapi - code sandbox server
 After=network.target
 
 [Service]
