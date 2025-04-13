@@ -60,15 +60,15 @@ func main() {
 	port := flag.Int("port", 1313, "server port")
 	flag.Parse()
 
-	cfg, err := config.Read("configs")
+	cfg, err := config.Read(".")
 	if err != nil {
-		logx.Log("missing config file")
+		logx.Log("read config: %v", err)
 		os.Exit(1)
 	}
 
 	err = sandbox.ApplyConfig(cfg)
 	if err != nil {
-		logx.Log("invalid config: %v", err)
+		logx.Log("apply config: %v", err)
 		os.Exit(1)
 	}
 
