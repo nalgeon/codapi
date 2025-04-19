@@ -13,13 +13,13 @@ main() {
         exit 1
     fi
 
-    resource="$1"
-    command="$2"
-    args="${@:3}"
+    local resource="$1"
+    local command="$2"
+    local args=("${@:3}")
 
     case "$resource" in
     "sandbox")
-        do_sandbox $command "${args[@]}"
+        do_sandbox "$command" ${args[@]+"${args[@]}"}
         ;;
     *)
         echo "Unknown resource: $resource"
@@ -30,17 +30,17 @@ main() {
 
 do_sandbox() {
     local command="$1"
-    local args="${@:2}"
+    local args=("${@:2}")
     mkdir -p "$sandboxes_dir"
     case "$command" in
         "add")
-            do_sandbox_add "${args[@]}"
+            do_sandbox_add ${args[@]+"${args[@]}"}
             ;;
         "rm")
-            do_sandbox_rm "${args[@]}"
+            do_sandbox_rm ${args[@]+"${args[@]}"}
             ;;
         "ls")
-            do_sandbox_ls "${args[@]}"
+            do_sandbox_ls ${args[@]+"${args[@]}"}
             ;;
         *)
             echo "Unknown command: $command"
@@ -52,14 +52,15 @@ do_sandbox() {
 do_sandbox_add() {
     # Command: codapi-cli sandbox add <path>
 
-    local path="$1"
-    if [[ -z "$path" ]]; then
+    if [[ "$#" -ne 1 ]]; then
         echo "Usage: $0 sandbox add <path>"
         exit 1
     fi
+    local path="$1"
 
     # 1. Set the name of the sandbox.
-    local filename=$(basename "$path")
+    local filename
+    filename=$(basename "$path")
     local archive_path="$sandboxes_dir/$filename"
     local name
     if [[ "$filename" == *.tar.gz ]]; then
@@ -148,11 +149,11 @@ do_sandbox_add() {
 do_sandbox_rm() {
     # Command: codapi-cli sandbox rm <name>
 
-    local name="$1"
-    if [[ -z "$name" ]]; then
+    if [[ "$#" -ne 1 ]]; then
         echo "Usage: $0 sandbox rm <name>"
         exit 1
     fi
+    local name="$1"
 
     local target_dir="$sandboxes_dir/$name"
     if [[ ! -d "$target_dir" ]]; then
@@ -175,11 +176,12 @@ do_sandbox_rm() {
 do_sandbox_ls() {
     # Command: codapi-cli sandbox ls
 
-    count=0
+    local name
+    local count=0
     echo "Available sandboxes:"
     for dir in "$sandboxes_dir"/*; do
         if [[ -d "$dir" ]]; then
-            local name=$(basename "$dir")
+            name=$(basename "$dir")
             echo "  - $name ($dir)"
             count=$((count + 1))
         fi
