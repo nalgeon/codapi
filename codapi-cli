@@ -4,8 +4,12 @@ set -euo pipefail
 sandboxes_dir="sandboxes"
 
 main() {
-    if [ "$#" -lt 2 ]; then
+    if [[ "$#" -eq 1 && ("$1" == "-h"  || "$1" == "--help") ]]; then
         do_help
+        exit 0
+    fi
+    if [ "$#" -lt 2 ]; then
+        echo "Usage: $0 <resource> <command> [args...]"
         exit 1
     fi
 
