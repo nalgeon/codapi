@@ -156,19 +156,13 @@ do_sandbox_rm() {
         exit 1
     fi
 
-    # 1. Stop the container if it's running.
-    if docker ps -q --filter "name=$name" | grep -q .; then
-        echo "Stopping container '$name'..."
-        docker stop --time=3 "$name"
-    fi
-
-    # 2. Remove the container if it exists.
+    # 1. Remove the container if it exists.
     if docker ps -a -q --filter "name=$name" | grep -q .; then
         echo "Removing container '$name'..."
-        docker rm "$name"
+        docker rm -f "$name"
     fi
 
-    # 3. Remove the directory and its contents.
+    # 2. Remove the directory and its contents.
     echo "Removing sandbox '$name' from $sandboxes_dir..."
     rm -rf "$target_dir"
     echo "✓ Successfully removed sandbox '$name'"
