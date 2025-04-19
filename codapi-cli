@@ -8,7 +8,7 @@ main() {
         do_help
         exit 0
     fi
-    if [ "$#" -lt 2 ]; then
+    if [[ "$#" -lt 2 ]]; then
         echo "Usage: $0 <resource> <command> [args...]"
         exit 1
     fi
@@ -53,7 +53,7 @@ do_sandbox_add() {
     # Command: codapi-cli sandbox add <path>
 
     local path="$1"
-    if [ -z "$path" ]; then
+    if [[ -z "$path" ]]; then
         echo "Usage: $0 sandbox add <path>"
         exit 1
     fi
@@ -72,7 +72,7 @@ do_sandbox_add() {
 
     # 2. Check if the sandbox already exists.
     local target_dir="$sandboxes_dir/$name"
-    if [ -d "$target_dir" ]; then
+    if [[ -d "$target_dir" ]]; then
         echo "ERROR: Sandbox '$name' already exists"
         echo "Remove it with 'codapi-cli sandbox rm $name' and try again"
         rm -f "$archive_path"
@@ -88,7 +88,7 @@ do_sandbox_add() {
         fi
     else
         echo "Copying local file $path..."
-        if [ ! -f "$path" ]; then
+        if [[ ! -f "$path" ]]; then
             echo "ERROR: File not found at $path"
             exit 1
         fi
@@ -111,15 +111,15 @@ do_sandbox_add() {
 
     # 5. Run build.sh if it exists.
     local build_script="$target_dir/build.sh"
-    if [ -f "$build_script" ]; then
+    if [[ -f "$build_script" ]]; then
         echo "Running build script: $build_script"
-        if [ ! -x "$build_script" ]; then
+        if [[ ! -x "$build_script" ]]; then
             echo "Warning: $build_script is not executable, fixing..."
             chmod +x "$build_script"
         fi
         # Execute the script from within its directory
         (cd "$target_dir" && ./build.sh)
-        if [ $? -ne 0 ]; then
+        if [[ $? -ne 0 ]]; then
             echo "ERROR: build.sh failed for sandbox '$name'"
             exit 1
         fi
@@ -127,15 +127,15 @@ do_sandbox_add() {
 
     # 6. Run setup.sh if it exists.
     local setup_script="$target_dir/setup.sh"
-    if [ -f "$setup_script" ]; then
+    if [[ -f "$setup_script" ]]; then
         echo "Running setup script: $setup_script"
-        if [ ! -x "$setup_script" ]; then
+        if [[ ! -x "$setup_script" ]]; then
             echo "Warning: $setup_script is not executable, fixing..."
             chmod +x "$setup_script"
         fi
          # Execute the script from within its directory
         (cd "$target_dir" && ./setup.sh)
-         if [ $? -ne 0 ]; then
+         if [[ $? -ne 0 ]]; then
             echo "ERROR: setup.sh failed for sandbox '$name'"
             exit 1
         fi
@@ -149,13 +149,13 @@ do_sandbox_rm() {
     # Command: codapi-cli sandbox rm <name>
 
     local name="$1"
-    if [ -z "$name" ]; then
+    if [[ -z "$name" ]]; then
         echo "Usage: $0 sandbox rm <name>"
         exit 1
     fi
 
     local target_dir="$sandboxes_dir/$name"
-    if [ ! -d "$target_dir" ]; then
+    if [[ ! -d "$target_dir" ]]; then
         echo "ERROR: Sandbox '$name' does not exist"
         exit 1
     fi
@@ -178,13 +178,13 @@ do_sandbox_ls() {
     count=0
     echo "Available sandboxes:"
     for dir in "$sandboxes_dir"/*; do
-        if [ -d "$dir" ]; then
+        if [[ -d "$dir" ]]; then
             local name=$(basename "$dir")
             echo "  - $name ($dir)"
             count=$((count + 1))
         fi
     done
-    if [ $count -eq 0 ]; then
+    if [[ $count -eq 0 ]]; then
         echo "(none)"
     else
         echo "($count total)"
