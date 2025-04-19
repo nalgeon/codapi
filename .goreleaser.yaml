@@ -12,6 +12,7 @@ builds:
 archives:
     - files:
           - sandboxes/*
+          - codapi-cli
           - codapi.json
           - codapi.service
           - LICENSE

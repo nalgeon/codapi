@@ -1,0 +1,208 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+sandboxes_dir="sandboxes"
+
+main() {
+    if [ "$#" -lt 2 ]; then
+        do_help
+        exit 1
+    fi
+
+    resource="$1"
+    command="$2"
+    args="${@:3}"
+
+    case "$resource" in
+    "sandbox")
+        do_sandbox $command "${args[@]}"
+        ;;
+    *)
+        echo "Unknown resource: $resource"
+        exit 1
+        ;;
+    esac
+}
+
+do_sandbox() {
+    local command="$1"
+    local args="${@:2}"
+    mkdir -p "$sandboxes_dir"
+    case "$command" in
+        "add")
+            do_sandbox_add "${args[@]}"
+            ;;
+        "rm")
+            do_sandbox_rm "${args[@]}"
+            ;;
+        "ls")
+            do_sandbox_ls "${args[@]}"
+            ;;
+        *)
+            echo "Unknown command: $command"
+            exit 1
+            ;;
+    esac
+}
+
+do_sandbox_add() {
+    # Command: codapi-cli sandbox add <path>
+
+    local path="$1"
+    if [ -z "$path" ]; then
+        echo "Usage: $0 sandbox add <path>"
+        exit 1
+    fi
+
+    # 1. Set the name of the sandbox.
+    local filename=$(basename "$path")
+    local archive_path="$sandboxes_dir/$filename"
+    local name
+    if [[ "$filename" == *.tar.gz ]]; then
+        name="${filename%.tar.gz}"
+    else
+        echo "ERROR: Archive name must end with .tar.gz"
+        rm -f "$archive_path"
+        exit 1
+    fi
+
+    # 2. Check if the sandbox already exists.
+    local target_dir="$sandboxes_dir/$name"
+    if [ -d "$target_dir" ]; then
+        echo "ERROR: Sandbox '$name' already exists"
+        echo "Remove it with 'codapi-cli sandbox rm $name' and try again"
+        rm -f "$archive_path"
+        exit 1
+    fi
+
+    # 3. Get the sandbox archive.
+    if [[ "$path" == http://* || "$path" == https://* ]]; then
+        echo "Downloading from $path..."
+        if ! curl --location --progress-bar --output "$sandboxes_dir/$filename" "$path"; then
+            echo "ERROR: Failed to download sandbox archive from $path"
+            exit 1
+        fi
+    else
+        echo "Copying local file $path..."
+        if [ ! -f "$path" ]; then
+            echo "ERROR: File not found at $path"
+            exit 1
+        fi
+        if ! cp "$path" "$sandboxes_dir/"; then
+             echo "ERROR: Failed to copy sandbox archive from $path"
+             exit 1
+        fi
+    fi
+
+    # 4. Extract the archive.
+    echo "Extracting $archive_path to $target_dir..."
+    mkdir -p "$target_dir"
+    if ! tar -xzf "$archive_path" -C "$sandboxes_dir"; then
+        echo "ERROR: Failed to extract sandbox archive $archive_path"
+        rm -rf "$target_dir"
+        rm -f "$archive_path"
+        exit 1
+    fi
+    rm -f "$archive_path"
+
+    # 5. Run build.sh if it exists.
+    local build_script="$target_dir/build.sh"
+    if [ -f "$build_script" ]; then
+        echo "Running build script: $build_script"
+        if [ ! -x "$build_script" ]; then
+            echo "Warning: $build_script is not executable, fixing..."
+            chmod +x "$build_script"
+        fi
+        # Execute the script from within its directory
+        (cd "$target_dir" && ./build.sh)
+        if [ $? -ne 0 ]; then
+            echo "ERROR: build.sh failed for sandbox '$name'"
+            exit 1
+        fi
+    fi
+
+    # 6. Run setup.sh if it exists.
+    local setup_script="$target_dir/setup.sh"
+    if [ -f "$setup_script" ]; then
+        echo "Running setup script: $setup_script"
+        if [ ! -x "$setup_script" ]; then
+            echo "Warning: $setup_script is not executable, fixing..."
+            chmod +x "$setup_script"
+        fi
+         # Execute the script from within its directory
+        (cd "$target_dir" && ./setup.sh)
+         if [ $? -ne 0 ]; then
+            echo "ERROR: setup.sh failed for sandbox '$name'"
+            exit 1
+        fi
+    fi
+
+    # 7. Display success message.
+    echo "✓ Successfully added sandbox '$name' ($target_dir)"
+}
+
+do_sandbox_rm() {
+    # Command: codapi-cli sandbox rm <name>
+
+    local name="$1"
+    if [ -z "$name" ]; then
+        echo "Usage: $0 sandbox rm <name>"
+        exit 1
+    fi
+
+    local target_dir="$sandboxes_dir/$name"
+    if [ ! -d "$target_dir" ]; then
+        echo "ERROR: Sandbox '$name' does not exist"
+        exit 1
+    fi
+
+    # 1. Stop the container if it's running.
+    if docker ps -q --filter "name=$name" | grep -q .; then
+        echo "Stopping container '$name'..."
+        docker stop --time=3 "$name"
+    fi
+
+    # 2. Remove the container if it exists.
+    if docker ps -a -q --filter "name=$name" | grep -q .; then
+        echo "Removing container '$name'..."
+        docker rm "$name"
+    fi
+
+    # 3. Remove the directory and its contents.
+    echo "Removing sandbox '$name' from $sandboxes_dir..."
+    rm -rf "$target_dir"
+    echo "✓ Successfully removed sandbox '$name'"
+}
+
+do_sandbox_ls() {
+    # Command: codapi-cli sandbox ls
+
+    count=0
+    echo "Available sandboxes:"
+    for dir in "$sandboxes_dir"/*; do
+        if [ -d "$dir" ]; then
+            local name=$(basename "$dir")
+            echo "  - $name ($dir)"
+            count=$((count + 1))
+        fi
+    done
+    if [ $count -eq 0 ]; then
+        echo "(none)"
+    else
+        echo "($count total)"
+    fi
+}
+
+do_help() {
+    echo "Usage: $0 <resource> <command> [args...]"
+    echo ""
+    echo "Resources:"
+    echo "  sandbox   Manage sandboxes"
+    echo ""
+    echo "sandbox commands:"
+    echo "  add       Add a new sandbox"
+    echo "  rm        Remove an existing sandbox"
+    echo "  ls        List all sandboxes"
+}
+
+main "$@"
