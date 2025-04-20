@@ -13,13 +13,12 @@ main() {
         exit 1
     fi
 
-    local resource="$1"
-    local command="$2"
-    local args=("${@:3}")
+    local resource="$1"; shift
+    local command="$1"; shift
 
     case "$resource" in
     "sandbox")
-        do_sandbox "$command" ${args[@]+"${args[@]}"}
+        do_sandbox "$command" "$@"
         ;;
     *)
         echo "Unknown resource: $resource"
@@ -29,18 +28,17 @@ main() {
 }
 
 do_sandbox() {
-    local command="$1"
-    local args=("${@:2}")
+    local command="$1"; shift
     mkdir -p "$sandboxes_dir"
     case "$command" in
         "add")
-            do_sandbox_add ${args[@]+"${args[@]}"}
+            do_sandbox_add "$@"
             ;;
         "rm")
-            do_sandbox_rm ${args[@]+"${args[@]}"}
+            do_sandbox_rm "$@"
             ;;
         "ls")
-            do_sandbox_ls ${args[@]+"${args[@]}"}
+            do_sandbox_ls "$@"
             ;;
         *)
             echo "Unknown command: $command"
@@ -52,11 +50,11 @@ do_sandbox() {
 do_sandbox_add() {
     # Command: codapi-cli sandbox add <path>
 
-    if [[ "$#" -ne 1 ]]; then
+    local path="${1:-}"
+    if [[ -z "$path" ]]; then
         echo "Usage: $0 sandbox add <path>"
         exit 1
     fi
-    local path="$1"
 
     # 1. Set the name of the sandbox.
     local filename
@@ -149,11 +147,11 @@ do_sandbox_add() {
 do_sandbox_rm() {
     # Command: codapi-cli sandbox rm <name>
 
-    if [[ "$#" -ne 1 ]]; then
+    local name="${1:-}"
+    if [[ -z "$name" ]]; then
         echo "Usage: $0 sandbox rm <name>"
         exit 1
     fi
-    local name="$1"
 
     local target_dir="$sandboxes_dir/$name"
     if [[ ! -d "$target_dir" ]]; then
