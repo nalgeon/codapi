@@ -57,6 +57,12 @@ do_sandbox_add() {
         exit 1
     fi
 
+    # 0. Check if the path a package name.
+    if [[ "$path" =~ ^[a-zA-Z0-9_-]*$ ]]; then
+        # This is a package name, so we need to download it from the registry.
+        path="https://github.com/nalgeon/sandboxes/releases/download/latest/$path.tar.gz" 
+    fi
+
     # 1. Set the name of the sandbox.
     local filename
     filename=$(basename "$path")
