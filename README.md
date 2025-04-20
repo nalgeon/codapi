@@ -30,9 +30,8 @@ To run Codapi locally, follow these steps:
 
 ```sh
 mkdir ~/codapi && cd ~/codapi
-curl -L -o codapi.tar.gz "https://github.com/nalgeon/codapi/releases/download/v0.10.0/codapi_0.10.0_linux_amd64.tar.gz"
+curl -L -o codapi.tar.gz "https://github.com/nalgeon/codapi/releases/download/v0.11.0/codapi_0.11.0_linux_amd64.tar.gz"
 tar xvzf codapi.tar.gz
-chmod +x codapi
 rm -f codapi.tar.gz
 ```
 
@@ -48,19 +47,21 @@ docker build --file sandboxes/ash/Dockerfile --tag codapi/ash:latest sandboxes/a
 ./codapi
 ```
 
+## Usage
+
+See [Adding a sandbox](docs/add-sandbox.md) to add a sandbox from the [registry](https://github.com/nalgeon/sandboxes) or create a custom one.
+
+See [API](docs/api.md) to run sandboxed code using the HTTP API.
+
+See [codapi-js](https://github.com/nalgeon/codapi-js) to embed the JavaScript widget into a web page.
+
+## Production
+
 Running in production is a bit more involved. See these guides:
 
 -   [Installing Codapi](docs/install.md)
 -   [Updating Codapi](docs/update.md)
 -   [Deploying to production](docs/production.md)
-
-## Usage
-
-See [Adding a sandbox](docs/add-sandbox.md) to create a custom sandbox.
-
-See [API](docs/api.md) to run sandboxed code using the HTTP API.
-
-See [codapi-js](https://github.com/nalgeon/codapi-js) to embed the JavaScript widget into a web page.
 
 ## Contributing
 

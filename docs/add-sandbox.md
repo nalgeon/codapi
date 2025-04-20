@@ -4,7 +4,27 @@ A _sandbox_ is an isolated execution environment for running code snippets. A sa
 
 Codapi comes with a single `ash` sandbox preinstalled, but you can easily add others. Let's see some examples.
 
-## Python
+## Add a sandbox from the registry
+
+The [sandboxes](https://github.com/nalgeon/sandboxes) repository contains several dozen ready-to-use sandboxes, from Go and Rust, to PostgreSQL and ClickHouse, to Caddy and Ripgrep.
+
+To add a sandbox, use `codapi-cli` like this:
+
+```text
+./codapi-cli sandbox add <name>
+```
+
+For example:
+
+```sh
+./codapi-cli sandbox add lua
+./codapi-cli sandbox add go
+./codapi-cli sandbox add mariadb
+```
+
+Then restart the Codapi server and you're done.
+
+## Create a sandbox from scratch
 
 First, let's create a Docker image capable of running Python with some third-party packages:
 
