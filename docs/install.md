@@ -2,47 +2,57 @@
 
 Make sure you install Codapi on a separate machine — this is a must for security reasons. Do not store any sensitive data or credentials on this machine. This way, even if someone runs malicious code that somehow escapes the isolated environment, they won't have access to your other machines and data.
 
-Steps for Debian (11+) or Ubuntu (20.04+).
+Steps for Debian (11+):
 
-1. Install necessary packages (as root):
-
-```sh
-apt update && apt install -y ca-certificates curl docker.io make unzip
-systemctl enable docker.service
-systemctl restart docker.service
-```
-
-2. Create Codapi user (as root):
+1. Install necessary packages:
 
 ```sh
-useradd --groups docker --shell /usr/bin/bash --create-home --home /opt/codapi codapi
+sudo apt update && sudo apt install -y ca-certificates curl make unzip
 ```
 
-3. Verify that Docker is working (as codapi):
+Install [Docker](https://docs.docker.com/engine/install/debian/). Note: Do not install the `docker.io` package. Follow the official Docker instructions for Debian instead.
+
+After installing Docker, start it:
+
+```sh
+sudo systemctl enable docker.service
+sudo systemctl restart docker.service
+```
+
+Verify that Docker is working:
 
 ```sh
 docker run hello-world
 ```
 
-4. Install Codapi (as codapi):
+2. Create Codapi user:
 
 ```sh
+sudo useradd --groups docker --shell /usr/bin/bash --create-home --home /opt/codapi codapi
+```
+
+Install Codapi:
+
+```sh
+sudo su - codapi
 cd /opt/codapi
 curl -L -o codapi.tar.gz "https://github.com/nalgeon/codapi/releases/download/v0.11.0/codapi_0.11.0_linux_amd64.tar.gz"
 tar xvzf codapi.tar.gz
 rm -f codapi.tar.gz
 ```
 
-5. Build the sample `ash` sandbox image:
+3. Build the sample `ash` sandbox image:
 
 ```sh
+sudo su - codapi
 cd /opt/codapi
 docker build --file sandboxes/ash/Dockerfile --tag codapi/ash:latest sandboxes/ash
 ```
 
-6. Verify that Codapi starts without errors (as codapi):
+Verify that Codapi starts without errors (as codapi):
 
 ```sh
+sudo su - codapi
 cd /opt/codapi
 ./codapi
 ```
@@ -59,19 +69,19 @@ It should list `ash` in both `boxes` and `commands`:
 
 Stop it with Ctrl+C.
 
-7. Configure Codapi as systemd service (as root):
+4. Configure Codapi as systemd service:
 
 ```sh
-mv /opt/codapi/codapi.service /etc/systemd/system/
-chown root:root /etc/systemd/system/codapi.service
-systemctl enable codapi.service
-systemctl start codapi.service
+sudo mv /opt/codapi/codapi.service /etc/systemd/system/
+sudo chown root:root /etc/systemd/system/codapi.service
+sudo systemctl enable codapi.service
+sudo systemctl start codapi.service
 ```
 
 Verify that the Codapi service is running:
 
 ```sh
-systemctl status codapi.service
+sudo systemctl status codapi.service
 ```
 
 Should print `active (running)`:
@@ -83,7 +93,7 @@ codapi.service - Code playgrounds
 ...
 ```
 
-8. Verify that Codapi is working:
+5. Verify that Codapi is working:
 
 ```sh
 curl -H "content-type: application/json" -d '{ "sandbox": "ash", "command": "run", "files": {"": "echo hello" }}' http://localhost:1313/v1/exec
