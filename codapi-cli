@@ -36,7 +36,7 @@ do_exec() {
 
     # Check the prerequisites.
     if [[ "$#" -ne 3 ]]; then
-        echo "Usage: $0 code <sandbox> <command> <filename>"
+        echo "Usage: $0 exec <sandbox> <command> <filename>"
         exit 1
     fi
     if ! command -v curl >/dev/null 2>&1; then
