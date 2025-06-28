@@ -3,29 +3,87 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 sandboxes_dir="sandboxes"
+codapi_url="${CODAPI_URL:-localhost:1313}"
 
 main() {
-    if [[ "$#" -eq 1 && ("$1" == "-h"  || "$1" == "--help") ]]; then
+    # Check the prerequisites.
+    if [[ "$#" -lt 1 || "$1" == "-h"  || "$1" == "--help" ]]; then
         do_help
         exit 0
     fi
-    if [[ "$#" -lt 2 ]]; then
-        echo "Usage: $0 <resource> <command> [args...]"
-        exit 1
-    fi
 
-    local resource="$1"; shift
+    # Route according to the command.
     local command="$1"; shift
-
-    case "$resource" in
+    case "$command" in
+    "exec")
+        do_exec "$@"
+        ;;
+    "help")
+        do_help "$@"
+        ;;
     "sandbox")
-        do_sandbox "$command" "$@"
+        do_sandbox "$@"
         ;;
     *)
-        echo "Unknown resource: $resource"
+        echo "Unknown command: $command"
         exit 1
         ;;
     esac
+}
+
+do_exec() {
+    # Command: codapi-cli exec <sandbox> <command> <filename>
+
+    # Check the prerequisites.
+    if [[ "$#" -ne 3 ]]; then
+        echo "Usage: $0 code <sandbox> <command> <filename>"
+        exit 1
+    fi
+    if ! command -v curl >/dev/null 2>&1; then
+        echo "ERROR: 'curl' is not installed. Install it and try again."
+        exit 1
+    fi
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "ERROR: 'jq' is not installed. Install it and try again."
+        exit 1
+    fi
+
+    # Read the arguments.
+    local sandbox="$1"
+    local command="$2"
+    local filename="$3"
+    if [[ ! -f "$filename" ]]; then
+        echo "ERROR: File not found: $filename"
+        exit 1
+    fi
+    local contents
+    contents=$(<"$filename")
+
+    # Prepare and send the exec request.
+    local json_payload
+    json_payload=$(jq -n --arg s "$sandbox" --arg c "$command" --arg f "$contents" '{sandbox: $s, command: $c, files: {"": $f}}')
+    local response http_code
+    response=$(mktemp)
+    http_code=$(curl --silent --show-error --json "$json_payload" --output "$response" --write-out '%{http_code}' "$codapi_url/v1/exec")
+
+    # Check the HTTP status.
+    if [[ "$http_code" != "200" ]]; then
+        cat "$response"
+        rm -f "$response"
+        exit 1
+    fi
+
+    # Display the response.
+    local stdout stderr
+    stdout=$(cat "$response" | jq -r '.stdout // empty')
+    stderr=$(cat "$response" | jq -r '.stderr // empty')
+    rm -f "$response"
+    if [[ -n "$stdout" ]]; then
+        echo "$stdout"
+    fi
+    if [[ -n "$stderr" ]]; then
+        echo "$stderr"
+    fi
 }
 
 do_sandbox() {
@@ -199,15 +257,13 @@ do_sandbox_ls() {
 }
 
 do_help() {
-    echo "Usage: $0 <resource> <command> [args...]"
+    echo "Usage: $0 <command> [args...]"
     echo ""
-    echo "Resources:"
-    echo "  sandbox   Manage sandboxes"
-    echo ""
-    echo "sandbox commands:"
-    echo "  add       Add a new sandbox"
-    echo "  rm        Remove an existing sandbox"
-    echo "  ls        List all sandboxes"
+    echo "commands:"
+    echo "  exec            Execute code in a sandbox"
+    echo "  sandbox add     Add a new sandbox"
+    echo "  sandbox rm      Remove an existing sandbox"
+    echo "  sandbox ls      List all sandboxes"
 }
 
 main "$@"
