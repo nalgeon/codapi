@@ -1,8 +1,8 @@
 # Interactive code examples
 
-_for documentation, education and fun_ 🎉
+Codapi is a lightweight sandbox server for interactive documentation and learning.
 
-Codapi is a platform for embedding interactive code snippets directly into your product documentation, online course or blog post. It's also useful for experimenting with new languages, databases, or tools in a sandbox.
+With Codapi, you can add interactive code snippets right into your product documentation, online course, or blog post. Codapi is also great for trying out new programming languages, databases, or tools in a safe sandbox environment.
 
 ```
 ┌───────────────────────────────┐
