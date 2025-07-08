@@ -2,8 +2,9 @@ package engine
 
 import (
 	"bytes"
-	"reflect"
 	"testing"
+
+	"github.com/nalgeon/be"
 )
 
 func TestLimitedWriter(t *testing.T) {
@@ -13,44 +14,26 @@ func TestLimitedWriter(t *testing.T) {
 	{
 		src := []byte{1, 2, 3}
 		n, err := w.Write(src)
-		if n != 3 {
-			t.Fatalf("write(1,2,3): expected n = 3, got %d", n)
-		}
-		if err != nil {
-			t.Fatalf("write(1,2,3): expected nil err, got %v", err)
-		}
-		if !reflect.DeepEqual(b.Bytes(), src) {
-			t.Fatalf("write(1,2,3): expected %v, got %v", src, b.Bytes())
-		}
+		be.Err(t, err, nil)
+		be.Equal(t, n, 3)
+		be.Equal(t, b.Bytes(), src)
 	}
 
 	{
 		src := []byte{4, 5}
 		n, err := w.Write(src)
-		if n != 2 {
-			t.Fatalf("+write(4,5): expected n = 2, got %d", n)
-		}
-		if err != nil {
-			t.Fatalf("+write(4,5): expected nil err, got %v", err)
-		}
+		be.Err(t, err, nil)
+		be.Equal(t, n, 2)
 		want := []byte{1, 2, 3, 4, 5}
-		if !reflect.DeepEqual(b.Bytes(), want) {
-			t.Fatalf("+write(4,5): expected %v, got %v", want, b.Bytes())
-		}
+		be.Equal(t, b.Bytes(), want)
 	}
 
 	{
 		src := []byte{6, 7, 8}
 		n, err := w.Write(src)
-		if n != 3 {
-			t.Fatalf("+write(6,7,8): expected n = 3, got %d", n)
-		}
-		if err != nil {
-			t.Fatalf("+write(6,7,8): expected nil err, got %v", err)
-		}
+		be.Err(t, err, nil)
+		be.Equal(t, n, 3)
 		want := []byte{1, 2, 3, 4, 5}
-		if !reflect.DeepEqual(b.Bytes(), want) {
-			t.Fatalf("+write(6,7,8): expected %v, got %v", want, b.Bytes())
-		}
+		be.Equal(t, b.Bytes(), want)
 	}
 }

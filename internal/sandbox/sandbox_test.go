@@ -1,9 +1,9 @@
 package sandbox
 
 import (
-	"errors"
 	"testing"
 
+	"github.com/nalgeon/be"
 	"github.com/nalgeon/codapi/internal/engine"
 	"github.com/nalgeon/codapi/internal/execy"
 )
@@ -11,7 +11,6 @@ import (
 func TestValidate(t *testing.T) {
 	_ = ApplyConfig(cfg)
 	t.Run("valid", func(t *testing.T) {
-
 		req := engine.Request{
 			ID:      "http_42",
 			Sandbox: "python",
@@ -21,9 +20,7 @@ func TestValidate(t *testing.T) {
 			},
 		}
 		err := Validate(req)
-		if err != nil {
-			t.Errorf("Validate: expected nil err, got %v", err)
-		}
+		be.Err(t, err, nil)
 	})
 	t.Run("unknown sandbox", func(t *testing.T) {
 		req := engine.Request{
@@ -33,9 +30,7 @@ func TestValidate(t *testing.T) {
 			Files:   nil,
 		}
 		err := Validate(req)
-		if !errors.Is(err, ErrUnknownSandbox) {
-			t.Errorf("Validate: expected ErrUnknownSandbox, got %T(%s)", err, err)
-		}
+		be.Err(t, err, ErrUnknownSandbox)
 	})
 	t.Run("unknown command", func(t *testing.T) {
 		req := engine.Request{
@@ -45,9 +40,7 @@ func TestValidate(t *testing.T) {
 			Files:   nil,
 		}
 		err := Validate(req)
-		if !errors.Is(err, ErrUnknownCommand) {
-			t.Errorf("Validate: expected ErrUnknownCommand, got %T(%s)", err, err)
-		}
+		be.Err(t, err, ErrUnknownCommand)
 	})
 	t.Run("empty request", func(t *testing.T) {
 		req := engine.Request{
@@ -57,9 +50,7 @@ func TestValidate(t *testing.T) {
 			Files:   nil,
 		}
 		err := Validate(req)
-		if !errors.Is(err, ErrEmptyRequest) {
-			t.Errorf("Validate: expected ErrEmptyRequest, got %T(%s)", err, err)
-		}
+		be.Err(t, err, ErrEmptyRequest)
 	})
 }
 
@@ -78,21 +69,11 @@ func TestExec(t *testing.T) {
 			},
 		}
 		out := Exec(req)
-		if out.ID != req.ID {
-			t.Errorf("ID: expected %s, got %s", req.ID, out.ID)
-		}
-		if !out.OK {
-			t.Error("OK: expected true")
-		}
-		if out.Stdout != "hello" {
-			t.Errorf("Stdout: expected hello, got %s", out.Stdout)
-		}
-		if out.Stderr != "" {
-			t.Errorf("Stderr: expected empty string, got %s", out.Stderr)
-		}
-		if out.Err != nil {
-			t.Errorf("Err: expected nil, got %v", out.Err)
-		}
+		be.Equal(t, out.ID, req.ID)
+		be.True(t, out.OK)
+		be.Equal(t, out.Stdout, "hello")
+		be.Equal(t, out.Stderr, "")
+		be.Equal(t, out.Err, nil)
 	})
 	t.Run("busy", func(t *testing.T) {
 		for i := 0; i < cfg.PoolSize; i++ {
@@ -107,9 +88,6 @@ func TestExec(t *testing.T) {
 			},
 		}
 		out := Exec(req)
-		if out.Err != engine.ErrBusy {
-			t.Errorf("Err: expected ErrBusy, got %v", out.Err)
-		}
+		be.Err(t, out.Err, engine.ErrBusy)
 	})
-
 }

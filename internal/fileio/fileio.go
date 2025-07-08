@@ -34,7 +34,7 @@ func CopyFiles(pattern string, dstDir string, perm fs.FileMode) error {
 		if err != nil {
 			return err
 		}
-		defer src.Close()
+		defer func() { _ = src.Close() }()
 
 		dstFile := filepath.Join(dstDir, filepath.Base(match))
 		if Exists(dstFile) {
@@ -45,7 +45,7 @@ func CopyFiles(pattern string, dstDir string, perm fs.FileMode) error {
 		if err != nil {
 			return err
 		}
-		defer dst.Close()
+		defer func() { _ = dst.Close() }()
 
 		_, err = io.Copy(dst, src)
 		if err != nil {
@@ -139,7 +139,7 @@ func MkdirTemp(perm fs.FileMode) (string, error) {
 	}
 	err = os.Chmod(dir, perm)
 	if err != nil {
-		os.Remove(dir)
+		_ = os.Remove(dir)
 		return "", err
 	}
 	return dir, nil

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/nalgeon/be"
 	"github.com/nalgeon/codapi/internal/config"
 	"github.com/nalgeon/codapi/internal/execy"
 	"github.com/nalgeon/codapi/internal/logx"
@@ -155,22 +156,12 @@ func TestDockerRun(t *testing.T) {
 			},
 		}
 		out := engine.Exec(req)
-		if out.ID != req.ID {
-			t.Errorf("ID: expected %s, got %s", req.ID, out.ID)
-		}
-		if !out.OK {
-			t.Error("OK: expected true")
-		}
+		be.Equal(t, out.ID, req.ID)
+		be.True(t, out.OK)
 		want := "hello world"
-		if out.Stdout != want {
-			t.Errorf("Stdout: expected %q, got %q", want, out.Stdout)
-		}
-		if out.Stderr != "" {
-			t.Errorf("Stderr: expected %q, got %q", "", out.Stdout)
-		}
-		if out.Err != nil {
-			t.Errorf("Err: expected nil, got %v", out.Err)
-		}
+		be.Equal(t, out.Stdout, want)
+		be.Equal(t, out.Stderr, "")
+		be.Equal(t, out.Err, nil)
 		mem.MustHave(t, "codapi/python")
 		mem.MustHave(t, "python main.py")
 	})
@@ -187,9 +178,7 @@ func TestDockerRun(t *testing.T) {
 			},
 		}
 		out := engine.Exec(req)
-		if !out.OK {
-			t.Error("OK: expected true")
-		}
+		be.True(t, out.OK)
 		mem.MustHave(t, "codapi/python")
 	})
 
@@ -206,9 +195,7 @@ func TestDockerRun(t *testing.T) {
 			},
 		}
 		out := engine.Exec(req)
-		if !out.OK {
-			t.Error("OK: expected true")
-		}
+		be.True(t, out.OK)
 		mem.MustHave(t, "codapi/python:dev")
 	})
 
@@ -225,9 +212,7 @@ func TestDockerRun(t *testing.T) {
 			},
 		}
 		out := engine.Exec(req)
-		if !out.OK {
-			t.Error("OK: expected true")
-		}
+		be.True(t, out.OK)
 		mem.MustHave(t, "codapi/go:dev")
 		mem.MustHave(t, "codapi/alpine")
 	})
@@ -245,13 +230,9 @@ func TestDockerRun(t *testing.T) {
 			},
 		}
 		out := engine.Exec(req)
-		if out.OK {
-			t.Error("OK: expected false")
-		}
+		be.Equal(t, out.OK, false)
 		want := "unknown box python:42"
-		if out.Stderr != want {
-			t.Errorf("Stderr: unexpected value: %s", out.Stderr)
-		}
+		be.Equal(t, out.Stderr, want)
 	})
 
 	t.Run("directory traversal attack", func(t *testing.T) {
@@ -268,13 +249,9 @@ func TestDockerRun(t *testing.T) {
 			},
 		}
 		out := engine.Exec(req)
-		if out.OK {
-			t.Error("OK: expected false")
-		}
+		be.Equal(t, out.OK, false)
 		want := fmt.Sprintf("files[%s]: invalid name", fileName)
-		if out.Stderr != want {
-			t.Errorf("Stderr: unexpected value: %s", out.Stderr)
-		}
+		be.Equal(t, out.Stderr, want)
 	})
 }
 
@@ -296,22 +273,12 @@ func TestDockerExec(t *testing.T) {
 			},
 		}
 		out := engine.Exec(req)
-		if out.ID != req.ID {
-			t.Errorf("ID: expected %s, got %s", req.ID, out.ID)
-		}
-		if !out.OK {
-			t.Error("OK: expected true")
-		}
+		be.Equal(t, out.ID, req.ID)
+		be.True(t, out.OK)
 		want := "hello world"
-		if out.Stdout != want {
-			t.Errorf("Stdout: expected %q, got %q", want, out.Stdout)
-		}
-		if out.Stderr != "" {
-			t.Errorf("Stderr: expected %q, got %q", "", out.Stdout)
-		}
-		if out.Err != nil {
-			t.Errorf("Err: expected nil, got %v", out.Err)
-		}
+		be.Equal(t, out.Stdout, want)
+		be.Equal(t, out.Stderr, "")
+		be.Equal(t, out.Err, nil)
 		mem.MustHave(t, "psql -f create.sql")
 		mem.MustHave(t, "psql --user=http_42")
 		mem.MustHave(t, "psql -f drop.sql")
@@ -338,23 +305,12 @@ func TestDockerStop(t *testing.T) {
 			},
 		}
 		out := engine.Exec(req)
-
-		if out.ID != req.ID {
-			t.Errorf("ID: expected %s, got %s", req.ID, out.ID)
-		}
-		if !out.OK {
-			t.Error("OK: expected true")
-		}
+		be.Equal(t, out.ID, req.ID)
+		be.True(t, out.OK)
 		want := "hello"
-		if out.Stdout != want {
-			t.Errorf("Stdout: expected %q, got %q", want, out.Stdout)
-		}
-		if out.Stderr != "" {
-			t.Errorf("Stderr: expected %q, got %q", "", out.Stdout)
-		}
-		if out.Err != nil {
-			t.Errorf("Err: expected nil, got %v", out.Err)
-		}
+		be.Equal(t, out.Stdout, want)
+		be.Equal(t, out.Stderr, "")
+		be.Equal(t, out.Err, nil)
 		mem.MustHave(t, "docker run --rm --name alpine_42", "--detach")
 		mem.MustHave(t, "docker exec --interactive --user sandbox alpine_42 sh main.sh")
 		mem.MustHave(t, "docker stop alpine_42")
@@ -372,8 +328,6 @@ func Test_expandVars(t *testing.T) {
 		src := strings.Fields(cmd)
 		exp := expandVars(src, name)
 		got := strings.Join(exp, " ")
-		if got != want {
-			t.Errorf("%q: expected %q, got %q", cmd, got, want)
-		}
+		be.Equal(t, got, want)
 	}
 }

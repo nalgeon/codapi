@@ -3,6 +3,8 @@ package server
 import (
 	"net/http"
 	"testing"
+
+	"github.com/nalgeon/be"
 )
 
 func TestServer(t *testing.T) {
@@ -11,21 +13,13 @@ func TestServer(t *testing.T) {
 	})
 
 	srv := NewServer("", 8585, handler)
-	if srv.srv.Addr != ":8585" {
-		t.Fatalf("NewServer: expected port :8585 got %s", srv.srv.Addr)
-	}
+	be.Equal(t, srv.srv.Addr, ":8585")
 
 	srv.Start()
 	resp, err := http.Get("http://localhost:8585/get")
-	if err != nil {
-		t.Fatalf("GET: expected nil err, got %v", err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("GET: expected status code 200, got %d", resp.StatusCode)
-	}
+	be.Err(t, err, nil)
+	be.Equal(t, resp.StatusCode, http.StatusOK)
 
 	err = srv.Stop()
-	if err != nil {
-		t.Fatalf("Stop: expected nil err, got %v", err)
-	}
+	be.Err(t, err, nil)
 }

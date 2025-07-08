@@ -2,46 +2,24 @@ package config
 
 import (
 	"testing"
+
+	"github.com/nalgeon/be"
 )
 
 func TestRead(t *testing.T) {
 	cfg, err := Read("testdata")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	if cfg.PoolSize != 8 {
-		t.Errorf("PoolSize: expected 8, got %d", cfg.PoolSize)
-	}
-	if !cfg.Verbose {
-		t.Error("Verbose: expected true")
-	}
-	if cfg.Box.Memory != 64 {
-		t.Errorf("Box.Memory: expected 64, got %d", cfg.Box.Memory)
-	}
-	if cfg.Step.User != "sandbox" {
-		t.Errorf("Step.User: expected sandbox, got %s", cfg.Step.User)
-	}
+	be.Err(t, err, nil)
+	be.Equal(t, cfg.PoolSize, 8)
+	be.Equal(t, cfg.Verbose, true)
+	be.Equal(t, cfg.Box.Memory, 64)
+	be.Equal(t, cfg.Step.User, "sandbox")
 
 	// alpine box
-	if _, ok := cfg.Boxes["custom-alpine"]; !ok {
-		t.Error("Boxes: missing my/alpine box")
-	}
-	if cfg.Boxes["custom-alpine"].Image != "custom/alpine" {
-		t.Errorf(
-			"Boxes[custom-alpine]: expected custom/alpine image, got %s",
-			cfg.Boxes["custom-alpine"].Image,
-		)
-	}
+	be.True(t, cfg.Boxes["custom-alpine"] != nil)
+	be.Equal(t, cfg.Boxes["custom-alpine"].Image, "custom/alpine")
 
 	// python box
-	if _, ok := cfg.Boxes["python"]; !ok {
-		t.Error("Boxes: missing python box")
-	}
-	if _, ok := cfg.Commands["python"]; !ok {
-		t.Error("Commands: missing python sandbox")
-	}
-	if _, ok := cfg.Commands["python"]["run"]; !ok {
-		t.Error("Commands[python]: missing run command")
-	}
+	be.True(t, cfg.Boxes["python"] != nil)
+	be.True(t, cfg.Commands["python"] != nil)
+	be.True(t, cfg.Commands["python"]["run"] != nil)
 }

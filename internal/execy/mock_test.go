@@ -5,6 +5,8 @@ import (
 	"os/exec"
 	"strings"
 	"testing"
+
+	"github.com/nalgeon/be"
 )
 
 func TestMock(t *testing.T) {
@@ -20,14 +22,8 @@ func TestMock(t *testing.T) {
 	cmd.Stderr = errb
 
 	err := Run(cmd)
-	if err != nil {
-		t.Fatalf("Err: expected nil, got %v", err)
-	}
-	if outb.String() != want {
-		t.Errorf("Stdout: expected %q, got %q", want, outb.String())
-	}
-	if errb.String() != "" {
-		t.Errorf("Stderr: expected %q, got %q", "", errb.String())
-	}
+	be.Err(t, err, nil)
+	be.Equal(t, outb.String(), want)
+	be.Equal(t, errb.String(), "")
 	mem.MustHave(t, "echo -n hello world")
 }

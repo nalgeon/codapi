@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/nalgeon/be"
 )
 
 // Memory stores logged messages in a slice.
@@ -50,16 +52,14 @@ func (m *Memory) Has(message ...string) bool {
 // If the message consists of several parts,
 // they must all be in the same memory line.
 func (m *Memory) MustHave(t *testing.T, message ...string) {
-	if !m.Has(message...) {
-		t.Errorf("%s must have: %v", m.Name, message)
-	}
+	t.Helper()
+	be.Equal(t, m.Has(message...), true)
 }
 
 // MustNotHave checks if the memory does not have the message.
 func (m *Memory) MustNotHave(t *testing.T, message ...string) {
-	if m.Has(message...) {
-		t.Errorf("%s must NOT have: %v", m.Name, message)
-	}
+	t.Helper()
+	be.Equal(t, m.Has(message...), false)
 }
 
 // Clear clears the memory.

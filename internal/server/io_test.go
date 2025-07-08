@@ -3,11 +3,11 @@ package server
 import (
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/nalgeon/be"
 	"github.com/nalgeon/codapi/internal/engine"
 )
 
@@ -18,34 +18,26 @@ func Test_readJson(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 
 		got, err := readJson[engine.Request](req)
-		if err != nil {
-			t.Errorf("expected nil err, got %v", err)
-		}
+		be.Err(t, err, nil)
 
 		want := engine.Request{
 			Sandbox: "python", Command: "run",
 		}
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("expected %v, got %v", want, got)
-		}
+		be.Equal(t, got, want)
 	})
 	t.Run("unsupported media type", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/example", nil)
 		req.Header.Set("Content-Type", "text/plain")
 
 		_, err := readJson[engine.Request](req)
-		if err == nil || err.Error() != "Unsupported Media Type" {
-			t.Errorf("unexpected error %v", err)
-		}
+		be.Err(t, err, "Unsupported Media Type")
 	})
 	t.Run("error", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/example", strings.NewReader("hello world"))
 		req.Header.Set("Content-Type", "application/json")
 
 		_, err := readJson[engine.Request](req)
-		if err == nil {
-			t.Error("expected unmarshaling error")
-		}
+		be.Err(t, err)
 	})
 }
 
@@ -56,30 +48,20 @@ func Test_writeJson(t *testing.T) {
 	}
 
 	err := writeJson(w, obj)
-	if err != nil {
-		t.Errorf("expected nil err, got %v", err)
-	}
+	be.Err(t, err, nil)
 
 	body := w.Body.String()
 	contentType := w.Header().Get("content-type")
-	if contentType != "application/json" {
-		t.Errorf("unexpected content-type header %s", contentType)
-	}
+	be.Equal(t, contentType, "application/json")
 
 	want := `{"id":"42","sandbox":"python","command":"run","files":null}`
-	if body != want {
-		t.Errorf("expected %s, got %s", body, want)
-	}
+	be.Equal(t, body, want)
 }
 
 func Test_writeError(t *testing.T) {
 	w := httptest.NewRecorder()
 	obj := time.Date(2020, 10, 15, 0, 0, 0, 0, time.UTC)
 	writeError(w, http.StatusForbidden, obj)
-	if w.Code != http.StatusForbidden {
-		t.Errorf("expected status code %d, got %d", http.StatusForbidden, w.Code)
-	}
-	if w.Body.String() != `"2020-10-15T00:00:00Z"` {
-		t.Errorf("unexpected body %s", w.Body.String())
-	}
+	be.Equal(t, w.Code, http.StatusForbidden)
+	be.Equal(t, w.Body.String(), `"2020-10-15T00:00:00Z"`)
 }

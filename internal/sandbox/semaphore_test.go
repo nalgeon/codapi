@@ -1,28 +1,24 @@
 package sandbox
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/nalgeon/be"
+)
 
 func TestSemaphore(t *testing.T) {
 	t.Run("size", func(t *testing.T) {
 		sem := NewSemaphore(3)
-		if sem.Size() != 3 {
-			t.Errorf("Size: expected 3, got %d", sem.Size())
-		}
+		be.Equal(t, sem.Size(), 3)
 	})
 	t.Run("acquire", func(t *testing.T) {
 		sem := NewSemaphore(2)
 		err := sem.Acquire()
-		if err != nil {
-			t.Fatalf("acquire #1: expected nil err")
-		}
+		be.Err(t, err, nil)
 		err = sem.Acquire()
-		if err != nil {
-			t.Fatalf("acquire #2: expected nil err")
-		}
+		be.Err(t, err, nil)
 		err = sem.Acquire()
-		if err != ErrBusy {
-			t.Fatalf("acquire #3: expected ErrBusy")
-		}
+		be.Err(t, err, ErrBusy)
 	})
 	t.Run("release", func(t *testing.T) {
 		sem := NewSemaphore(2)
@@ -32,9 +28,7 @@ func TestSemaphore(t *testing.T) {
 
 		sem.Release()
 		err := sem.Acquire()
-		if err != nil {
-			t.Fatalf("acquire after release: expected nil err")
-		}
+		be.Err(t, err, nil)
 	})
 	t.Run("release free", func(t *testing.T) {
 		sem := NewSemaphore(2)

@@ -47,7 +47,7 @@ func (e *Docker) Exec(req Request) Execution {
 		err = NewExecutionError("create temp dir", err)
 		return Fail(req.ID, err)
 	}
-	defer os.RemoveAll(dir)
+	defer func() { _ = os.RemoveAll(dir) }()
 
 	// if the command entry point file is not defined,
 	// there is no need to store request files in the temp directory
@@ -339,7 +339,7 @@ func expandVars(command []string, name string) []string {
 	expanded := make([]string, len(command))
 	copy(expanded, command)
 	for i, cmd := range expanded {
-		expanded[i] = strings.Replace(cmd, ":name", name, -1)
+		expanded[i] = strings.ReplaceAll(cmd, ":name", name)
 	}
 	return expanded
 }

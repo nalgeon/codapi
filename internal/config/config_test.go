@@ -1,9 +1,10 @@
 package config
 
 import (
-	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/nalgeon/be"
 )
 
 func TestConfig_BoxNames(t *testing.T) {
@@ -16,9 +17,7 @@ func TestConfig_BoxNames(t *testing.T) {
 
 	want := []string{"go", "python"}
 	got := cfg.BoxNames()
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("BoxNames: expected %v, got %v", want, got)
-	}
+	be.Equal(t, got, want)
 }
 
 func TestConfig_CommandNames(t *testing.T) {
@@ -36,9 +35,7 @@ func TestConfig_CommandNames(t *testing.T) {
 
 	want := []string{"go", "python"}
 	got := cfg.CommandNames()
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("CommandNames: expected %v, got %v", want, got)
-	}
+	be.Equal(t, got, want)
 }
 
 func TestConfig_ToJSON(t *testing.T) {
@@ -60,9 +57,7 @@ func TestConfig_ToJSON(t *testing.T) {
 	}
 
 	got := cfg.ToJSON()
-	if !strings.Contains(got, `"pool_size": 8`) {
-		t.Error("ToJSON: expected pool_size = 8")
-	}
+	be.True(t, strings.Contains(got, `"pool_size": 8`))
 }
 
 func Test_setBoxDefaults(t *testing.T) {
@@ -83,45 +78,19 @@ func Test_setBoxDefaults(t *testing.T) {
 		Files: []string{"config.py"},
 	}
 	setBoxDefaults(box, defs)
-	if box.Image != "" {
-		t.Error("Image: should not set default value")
-	}
-	if box.Runtime != defs.Runtime {
-		t.Errorf("Runtime: expected %s, got %s", defs.Runtime, box.Runtime)
-	}
-	if box.CPU != defs.CPU {
-		t.Errorf("CPU: expected %d, got %d", defs.CPU, box.CPU)
-	}
-	if box.Memory != defs.Memory {
-		t.Errorf("Memory: expected %d, got %d", defs.Memory, box.Memory)
-	}
-	if box.Storage != defs.Storage {
-		t.Errorf("Storage: expected %s, got %s", defs.Storage, box.Storage)
-	}
-	if box.Network != defs.Network {
-		t.Errorf("Network: expected %s, got %s", defs.Network, box.Network)
-	}
-	if box.Volume != defs.Volume {
-		t.Errorf("Volume: expected %s, got %s", defs.Volume, box.Volume)
-	}
-	if !reflect.DeepEqual(box.Tmpfs, defs.Tmpfs) {
-		t.Errorf("Tmpfs: expected %v, got %v", defs.Tmpfs, box.Tmpfs)
-	}
-	if !reflect.DeepEqual(box.CapAdd, defs.CapAdd) {
-		t.Errorf("CapAdd: expected %v, got %v", defs.CapAdd, box.CapAdd)
-	}
-	if !reflect.DeepEqual(box.CapDrop, defs.CapDrop) {
-		t.Errorf("CapDrop: expected %v, got %v", defs.CapDrop, box.CapDrop)
-	}
-	if !reflect.DeepEqual(box.Ulimit, defs.Ulimit) {
-		t.Errorf("Ulimit: expected %v, got %v", defs.Ulimit, box.Ulimit)
-	}
-	if box.NProc != defs.NProc {
-		t.Errorf("NProc: expected %d, got %d", defs.NProc, box.NProc)
-	}
-	if len(box.Files) != 0 {
-		t.Error("Files: should not set default value")
-	}
+	be.Equal(t, box.Image, "")
+	be.Equal(t, box.Runtime, defs.Runtime)
+	be.Equal(t, box.CPU, defs.CPU)
+	be.Equal(t, box.Memory, defs.Memory)
+	be.Equal(t, box.Storage, defs.Storage)
+	be.Equal(t, box.Network, defs.Network)
+	be.Equal(t, box.Volume, defs.Volume)
+	be.Equal(t, box.Tmpfs, defs.Tmpfs)
+	be.Equal(t, box.CapAdd, defs.CapAdd)
+	be.Equal(t, box.CapDrop, defs.CapDrop)
+	be.Equal(t, box.Ulimit, defs.Ulimit)
+	be.Equal(t, box.NProc, defs.NProc)
+	be.Equal(t, len(box.Files), 0)
 }
 
 func Test_setStepDefaults(t *testing.T) {
@@ -136,22 +105,10 @@ func Test_setStepDefaults(t *testing.T) {
 	}
 
 	setStepDefaults(step, defs)
-	if step.Box != "" {
-		t.Error("Box: should not set default value")
-	}
-	if step.User != defs.User {
-		t.Errorf("User: expected %s, got %s", defs.User, step.User)
-	}
-	if step.Action != defs.Action {
-		t.Errorf("Action: expected %s, got %s", defs.Action, step.Action)
-	}
-	if len(step.Command) != 0 {
-		t.Error("Command: should not set default value")
-	}
-	if step.Timeout != defs.Timeout {
-		t.Errorf("Timeout: expected %d, got %d", defs.Timeout, step.Timeout)
-	}
-	if step.NOutput != defs.NOutput {
-		t.Errorf("NOutput: expected %d, got %d", defs.NOutput, step.NOutput)
-	}
+	be.Equal(t, step.Box, "")
+	be.Equal(t, step.User, defs.User)
+	be.Equal(t, step.Action, defs.Action)
+	be.Equal(t, len(step.Command), 0)
+	be.Equal(t, step.Timeout, defs.Timeout)
+	be.Equal(t, step.NOutput, defs.NOutput)
 }

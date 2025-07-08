@@ -51,7 +51,7 @@ func (e *HTTP) Exec(req Request) Execution {
 		err = fmt.Errorf("http request: %w", err)
 		return Fail(req.ID, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// read response body
 	body, err := io.ReadAll(resp.Body)

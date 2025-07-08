@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/nalgeon/be"
 )
 
 func Test_enableCORS(t *testing.T) {
@@ -14,12 +16,8 @@ func Test_enableCORS(t *testing.T) {
 		fn := enableCORS(handler)
 		fn(w, r)
 
-		if w.Header().Get("access-control-allow-origin") != "*" {
-			t.Errorf("invalid access-control-allow-origin")
-		}
-		if w.Code != 200 {
-			t.Errorf("expected status code 200, got %d", w.Code)
-		}
+		be.Equal(t, w.Header().Get("access-control-allow-origin"), "*")
+		be.Equal(t, w.Code, 200)
 	})
 	t.Run("post", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -28,18 +26,10 @@ func Test_enableCORS(t *testing.T) {
 		fn := enableCORS(handler)
 		fn(w, r)
 
-		if w.Header().Get("access-control-allow-origin") != "*" {
-			t.Errorf("invalid access-control-allow-origin")
-		}
-		if w.Header().Get("access-control-allow-methods") != "options, post" {
-			t.Errorf("invalid access-control-allow-methods")
-		}
-		if w.Header().Get("access-control-allow-headers") != "authorization, content-type" {
-			t.Errorf("invalid access-control-allow-headers")
-		}
-		if w.Header().Get("access-control-max-age") != "3600" {
-			t.Errorf("access-control-max-age")
-		}
+		be.Equal(t, w.Header().Get("access-control-allow-origin"), "*")
+		be.Equal(t, w.Header().Get("access-control-allow-methods"), "options, post")
+		be.Equal(t, w.Header().Get("access-control-allow-headers"), "authorization, content-type")
+		be.Equal(t, w.Header().Get("access-control-max-age"), "3600")
 	})
 
 }

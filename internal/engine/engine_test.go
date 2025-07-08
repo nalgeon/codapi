@@ -2,10 +2,11 @@ package engine
 
 import (
 	"errors"
-	"reflect"
 	"sort"
 	"strings"
 	"testing"
+
+	"github.com/nalgeon/be"
 )
 
 func TestGenerateID(t *testing.T) {
@@ -16,9 +17,7 @@ func TestGenerateID(t *testing.T) {
 			Command: "run",
 		}
 		req.GenerateID()
-		if !strings.HasPrefix(req.ID, "python.dev_run_") {
-			t.Errorf("ID: unexpected prefix %s", req.ID)
-		}
+		be.True(t, strings.HasPrefix(req.ID, "python.dev_run_"))
 	})
 	t.Run("without version", func(t *testing.T) {
 		req := Request{
@@ -26,22 +25,14 @@ func TestGenerateID(t *testing.T) {
 			Command: "run",
 		}
 		req.GenerateID()
-		if !strings.HasPrefix(req.ID, "python_run_") {
-			t.Errorf("ID: unexpected prefix %s", req.ID)
-		}
+		be.True(t, strings.HasPrefix(req.ID, "python_run_"))
 	})
 }
 
 func TestExecutionError(t *testing.T) {
 	inner := errors.New("inner error")
 	err := NewExecutionError("failed", inner)
-	if err.Error() != "failed: inner error" {
-		t.Errorf("Error: expected %q, got %q", "failed: inner error", err.Error())
-	}
-	unwrapped := err.Unwrap()
-	if unwrapped != inner {
-		t.Errorf("Unwrap: expected %#v, got %#v", inner, unwrapped)
-	}
+	be.Err(t, err, inner)
 }
 
 func TestFiles_Count(t *testing.T) {
@@ -50,9 +41,7 @@ func TestFiles_Count(t *testing.T) {
 		"second": "bob",
 		"third":  "cindy",
 	}
-	if files.Count() != 3 {
-		t.Errorf("Count: expected 3, got %d", files.Count())
-	}
+	be.Equal(t, files.Count(), 3)
 }
 
 func TestFiles_Range(t *testing.T) {
@@ -71,13 +60,9 @@ func TestFiles_Range(t *testing.T) {
 			return true
 		})
 		sort.Strings(names)
-		if !reflect.DeepEqual(names, []string{"first", "second", "third"}) {
-			t.Errorf("unexpected names: %v", names)
-		}
+		be.Equal(t, names, []string{"first", "second", "third"})
 		sort.Strings(contents)
-		if !reflect.DeepEqual(contents, []string{"alice", "bob", "cindy"}) {
-			t.Errorf("unexpected contents: %v", contents)
-		}
+		be.Equal(t, contents, []string{"alice", "bob", "cindy"})
 	})
 
 	t.Run("break", func(t *testing.T) {
@@ -88,15 +73,9 @@ func TestFiles_Range(t *testing.T) {
 			contents = append(contents, content)
 			return false
 		})
-		if len(names) != 1 {
-			t.Fatalf("expected names len = 1, got %d", len(names))
-		}
-		if len(contents) != 1 {
-			t.Fatalf("expected contents len = 1, got %d", len(contents))
-		}
-		if files[names[0]] != contents[0] {
-			t.Fatalf("name does not match content: %v -> %v", names[0], contents[0])
-		}
+		be.Equal(t, len(names), 1)
+		be.Equal(t, len(contents), 1)
+		be.Equal(t, files[names[0]], contents[0])
 	})
 }
 
@@ -104,59 +83,28 @@ func TestFail(t *testing.T) {
 	t.Run("ExecutionError", func(t *testing.T) {
 		err := NewExecutionError("failed", errors.New("inner error"))
 		out := Fail("42", err)
-		if out.ID != "42" {
-			t.Errorf("ID: expected 42, got %v", out.ID)
-		}
-		if out.OK {
-			t.Error("OK: expected false")
-		}
-		if out.Stderr != "internal error" {
-			t.Errorf("Stderr: expected %q, got %q", "internal error", out.Stderr)
-		}
-		if out.Stdout != "" {
-			t.Errorf("Stdout: expected empty, got %q", out.Stdout)
-		}
-		if out.Err != err {
-			t.Errorf("Err: expected %#v, got %#v", err, out.Err)
-		}
+		be.Equal(t, out.ID, "42")
+		be.Equal(t, out.OK, false)
+		be.Equal(t, out.Stderr, "internal error")
+		be.Equal(t, out.Stdout, "")
+		be.Err(t, out.Err, err)
 	})
 	t.Run("ErrBusy", func(t *testing.T) {
 		err := ErrBusy
 		out := Fail("42", err)
-		if out.ID != "42" {
-			t.Errorf("ID: expected 42, got %v", out.ID)
-		}
-		if out.OK {
-			t.Error("OK: expected false")
-		}
-		if out.Stderr != err.Error() {
-			t.Errorf("Stderr: expected %q, got %q", err.Error(), out.Stderr)
-		}
-		if out.Stdout != "" {
-			t.Errorf("Stdout: expected empty, got %q", out.Stdout)
-		}
-		if out.Err != err {
-			t.Errorf("Err: expected %#v, got %#v", err, out.Err)
-		}
+		be.Equal(t, out.ID, "42")
+		be.Equal(t, out.OK, false)
+		be.Equal(t, out.Stderr, err.Error())
+		be.Equal(t, out.Stdout, "")
+		be.Err(t, out.Err, err)
 	})
 	t.Run("Error", func(t *testing.T) {
 		err := errors.New("user error")
 		out := Fail("42", err)
-		if out.ID != "42" {
-			t.Errorf("ID: expected 42, got %v", out.ID)
-		}
-		if out.OK {
-			t.Error("OK: expected false")
-		}
-		if out.Stderr != err.Error() {
-			t.Errorf("Stderr: expected %q, got %q", err.Error(), out.Stderr)
-		}
-		if out.Stdout != "" {
-			t.Errorf("Stdout: expected empty, got %q", out.Stdout)
-		}
-		if out.Err != nil {
-			t.Errorf("Err: expected nil, got %#v", out.Err)
-		}
+		be.Equal(t, out.ID, "42")
+		be.Equal(t, out.OK, false)
+		be.Equal(t, out.Stderr, err.Error())
+		be.Equal(t, out.Stdout, "")
+		be.Err(t, out.Err, nil)
 	})
-
 }

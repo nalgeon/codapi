@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/nalgeon/be"
 	"github.com/nalgeon/codapi/internal/config"
 	"github.com/nalgeon/codapi/internal/engine"
 	"github.com/nalgeon/codapi/internal/execy"
@@ -72,22 +73,12 @@ func Test_exec(t *testing.T) {
 			},
 		}
 		resp, err := srv.post("/v1/exec", in)
-		if err != nil {
-			t.Fatalf("POST /exec: expected nil err, got %v", err)
-		}
+		be.Err(t, err, nil)
 		out := decodeResp[engine.Execution](t, resp)
-		if !out.OK {
-			t.Error("OK: expected true")
-		}
-		if out.Stdout != "hello" {
-			t.Errorf("Stdout: expected hello, got %s", out.Stdout)
-		}
-		if out.Stderr != "" {
-			t.Errorf("Stderr: expected empty string, got %s", out.Stderr)
-		}
-		if out.Err != nil {
-			t.Errorf("Err: expected nil, got %v", out.Err)
-		}
+		be.True(t, out.OK)
+		be.Equal(t, out.Stdout, "hello")
+		be.Equal(t, out.Stderr, "")
+		be.Equal(t, out.Err, nil)
 	})
 	t.Run("error not found", func(t *testing.T) {
 		in := engine.Request{
@@ -96,25 +87,13 @@ func Test_exec(t *testing.T) {
 			Files:   nil,
 		}
 		resp, err := srv.post("/v1/exec", in)
-		if err != nil {
-			t.Fatalf("POST /exec: expected nil err, got %v", err)
-		}
-		if resp.StatusCode != http.StatusNotFound {
-			t.Errorf("StatusCode: expected 404, got %v", resp.StatusCode)
-		}
+		be.Err(t, err, nil)
+		be.Equal(t, resp.StatusCode, http.StatusNotFound)
 		out := decodeResp[engine.Execution](t, resp)
-		if out.OK {
-			t.Error("OK: expected false")
-		}
-		if out.Stdout != "" {
-			t.Errorf("Stdout: expected empty string, got %s", out.Stdout)
-		}
-		if out.Stderr != "unknown sandbox" {
-			t.Errorf("Stderr: expected error, got %s", out.Stderr)
-		}
-		if out.Err != nil {
-			t.Errorf("Err: expected nil, got %v", out.Err)
-		}
+		be.Equal(t, out.OK, false)
+		be.Equal(t, out.Stdout, "")
+		be.Equal(t, out.Stderr, "unknown sandbox")
+		be.Equal(t, out.Err, nil)
 	})
 	t.Run("error bad request", func(t *testing.T) {
 		in := engine.Request{
@@ -123,34 +102,20 @@ func Test_exec(t *testing.T) {
 			Files:   nil,
 		}
 		resp, err := srv.post("/v1/exec", in)
-		if err != nil {
-			t.Fatalf("POST /exec: expected nil err, got %v", err)
-		}
-		if resp.StatusCode != http.StatusBadRequest {
-			t.Errorf("StatusCode: expected 400, got %v", resp.StatusCode)
-		}
+		be.Err(t, err, nil)
+		be.Equal(t, resp.StatusCode, http.StatusBadRequest)
 		out := decodeResp[engine.Execution](t, resp)
-		if out.OK {
-			t.Error("OK: expected false")
-		}
-		if out.Stdout != "" {
-			t.Errorf("Stdout: expected empty string, got %s", out.Stdout)
-		}
-		if out.Stderr != "empty request" {
-			t.Errorf("Stderr: expected error, got %s", out.Stderr)
-		}
-		if out.Err != nil {
-			t.Errorf("Err: expected nil, got %v", out.Err)
-		}
+		be.Equal(t, out.OK, false)
+		be.Equal(t, out.Stdout, "")
+		be.Equal(t, out.Stderr, "empty request")
+		be.Equal(t, out.Err, nil)
 	})
 }
 
 func decodeResp[T any](t *testing.T, resp *http.Response) T {
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	var val T
 	err := json.NewDecoder(resp.Body).Decode(&val)
-	if err != nil {
-		t.Fatal(err)
-	}
+	be.Err(t, err, nil)
 	return val
 }

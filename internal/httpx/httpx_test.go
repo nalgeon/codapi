@@ -3,6 +3,8 @@ package httpx
 import (
 	"net/http"
 	"testing"
+
+	"github.com/nalgeon/be"
 )
 
 func TestDo(t *testing.T) {
@@ -14,27 +16,19 @@ func TestDo(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodGet, uri, nil)
 
 		resp, err := Do(req)
-		if err != nil {
-			t.Errorf("Do: unexpected error %v", err)
-		}
-		defer resp.Body.Close()
+		be.Err(t, err, nil)
+		defer func() { _ = resp.Body.Close() }()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("Do: expected status=%d, got %v", http.StatusOK, resp.StatusCode)
-		}
+		be.Equal(t, resp.StatusCode, http.StatusOK)
 	})
 	t.Run("not found", func(t *testing.T) {
 		uri := srv.URL + "/not-found.json"
 		req, _ := http.NewRequest(http.MethodGet, uri, nil)
 
 		resp, err := Do(req)
-		if err != nil {
-			t.Errorf("Do: unexpected error %v", err)
-		}
-		defer resp.Body.Close()
+		be.Err(t, err, nil)
+		defer func() { _ = resp.Body.Close() }()
 
-		if resp.StatusCode != http.StatusNotFound {
-			t.Errorf("Do: expected status=%d, got %v", http.StatusNotFound, resp.StatusCode)
-		}
+		be.Equal(t, resp.StatusCode, http.StatusNotFound)
 	})
 }

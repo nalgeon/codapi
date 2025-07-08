@@ -1,14 +1,16 @@
 package logx
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/nalgeon/be"
+)
 
 func TestSetOutput(t *testing.T) {
 	mem := NewMemory("log")
 	SetOutput(mem)
 	Log("hello")
-	if !mem.Has("hello") {
-		t.Error("SetOutput: memory not set as output")
-	}
+	be.True(t, mem.Has("hello"))
 }
 
 func TestLog(t *testing.T) {
@@ -16,21 +18,14 @@ func TestLog(t *testing.T) {
 	SetOutput(mem)
 	{
 		Log("value: %d", 42)
-		if len(mem.Lines) != 1 {
-			t.Errorf("Log: expected line count %v", len(mem.Lines))
-		}
-		if !mem.Has("value: 42") {
-			t.Errorf("Log: expected output: %v", mem.Lines)
-		}
+		be.Equal(t, len(mem.Lines), 1)
+		be.True(t, mem.Has("value: 42"))
 	}
 	{
 		Log("value: %d", 84)
-		if len(mem.Lines) != 2 {
-			t.Errorf("Log: expected line count %v", len(mem.Lines))
-		}
-		if !mem.Has("value: 42") || !mem.Has("value: 84") {
-			t.Errorf("Log: expected output: %v", mem.Lines)
-		}
+		be.Equal(t, len(mem.Lines), 2)
+		be.True(t, mem.Has("value: 42"))
+		be.True(t, mem.Has("value: 84"))
 	}
 }
 
@@ -41,21 +36,14 @@ func TestDebug(t *testing.T) {
 		Verbose = true
 		{
 			Debug("value: %d", 42)
-			if len(mem.Lines) != 1 {
-				t.Errorf("Log: expected line count %v", len(mem.Lines))
-			}
-			if !mem.Has("value: 42") {
-				t.Errorf("Log: expected output: %v", mem.Lines)
-			}
+			be.Equal(t, len(mem.Lines), 1)
+			be.True(t, mem.Has("value: 42"))
 		}
 		{
 			Debug("value: %d", 84)
-			if len(mem.Lines) != 2 {
-				t.Errorf("Log: expected line count %v", len(mem.Lines))
-			}
-			if !mem.Has("value: 42") || !mem.Has("value: 84") {
-				t.Errorf("Log: expected output: %v", mem.Lines)
-			}
+			be.Equal(t, len(mem.Lines), 2)
+			be.True(t, mem.Has("value: 42"))
+			be.True(t, mem.Has("value: 84"))
 		}
 	})
 	t.Run("disabled", func(t *testing.T) {
@@ -63,8 +51,6 @@ func TestDebug(t *testing.T) {
 		SetOutput(mem)
 		Verbose = false
 		Debug("value: %d", 42)
-		if len(mem.Lines) != 0 {
-			t.Errorf("Log: expected line count %v", len(mem.Lines))
-		}
+		be.Equal(t, len(mem.Lines), 0)
 	})
 }

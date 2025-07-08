@@ -3,6 +3,7 @@ package sandbox
 import (
 	"testing"
 
+	"github.com/nalgeon/be"
 	"github.com/nalgeon/codapi/internal/config"
 	"github.com/nalgeon/codapi/internal/engine"
 )
@@ -35,25 +36,13 @@ var cfg = &config.Config{
 
 func TestApplyConfig(t *testing.T) {
 	err := ApplyConfig(cfg)
-	if err != nil {
-		t.Fatalf("ApplyConfig: expected nil err, got %v", err)
-	}
-	if semaphore.Size() != cfg.PoolSize {
-		t.Errorf("semaphore.Size: expected %d, got %d", cfg.PoolSize, semaphore.Size())
-	}
-	if len(engines) != 2 {
-		t.Errorf("len(engines): expected 2, got %d", len(engines))
-	}
-	if len(engines["http"]) != 1 {
-		t.Errorf("len(engine = http): expected 1, got %d", len(engines["http"]))
-	}
-	if _, ok := engines["http"]["run"].(*engine.HTTP); !ok {
-		t.Error("engine = http: expected HTTP engine")
-	}
-	if len(engines["python"]) != 2 {
-		t.Errorf("len(engine = python): expected 2, got %d", len(engines["python"]))
-	}
-	if _, ok := engines["python"]["run"].(*engine.Docker); !ok {
-		t.Error("engine = python: expected Docker engine")
-	}
+	be.Err(t, err, nil)
+	be.Equal(t, semaphore.Size(), cfg.PoolSize)
+	be.Equal(t, len(engines), 2)
+	be.Equal(t, len(engines["http"]), 1)
+	_, ok := engines["http"]["run"].(*engine.HTTP)
+	be.True(t, ok)
+	be.Equal(t, len(engines["python"]), 2)
+	_, ok = engines["python"]["run"].(*engine.Docker)
+	be.True(t, ok)
 }

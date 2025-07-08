@@ -1,4 +1,4 @@
-.PHONY: build images
+.PHONY: build
 
 # Development
 
@@ -12,14 +12,16 @@ setup:
 	@go mod download
 
 lint:
-	@golangci-lint run --print-issued-lines=false --out-format=colored-line-number ./...
+	@golangci-lint run ./...
+	@echo "✓ lint"
 
 vet:
 	@go vet ./...
+	@echo "✓ vet"
 
 test:
-	@go test ./... -v
-
+	@go test ./...
+	@echo "✓ test"
 
 build:
 	@go build -ldflags "-X main.commit=$(build_rev) -X main.date=$(build_date)" -o build/codapi -v cmd/main.go

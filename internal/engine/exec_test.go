@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/nalgeon/be"
 	"github.com/nalgeon/codapi/internal/execy"
 )
 
@@ -22,18 +23,10 @@ func TestProgram_Run(t *testing.T) {
 			p := NewProgram(3, 100)
 			name, arg, _ := strings.Cut(key, " ")
 			stdout, stderr, err := p.Run("mock_42", name, arg)
-			if !mem.Has(key) {
-				t.Errorf("Run: command %q not run", key)
-			}
-			if stdout != want.Stdout {
-				t.Errorf("stdout: want %#v, got %#v", want.Stdout, stdout)
-			}
-			if stderr != want.Stderr {
-				t.Errorf("stderr: want %#v, got %#v", want.Stderr, stderr)
-			}
-			if err != want.Err {
-				t.Errorf("err: want %#v, got %#v", want.Err, err)
-			}
+			be.True(t, mem.Has(key))
+			be.Equal(t, stdout, want.Stdout)
+			be.Equal(t, stderr, want.Stderr)
+			be.Err(t, err, want.Err)
 		})
 	}
 }
@@ -42,7 +35,7 @@ func TestProgram_LimitOutput(t *testing.T) {
 	commands := map[string]execy.CmdOut{
 		"mock stdout": {Stdout: "1234567890", Stderr: ""},
 		"mock stderr": {Stdout: "", Stderr: "1234567890"},
-		"mock outerr": {Stdout: "1234567890", Stderr: "1234567890"},
+		"mock outerr": {Stdout: "1234567890", Stderr: "0987654321"},
 	}
 	execy.Mock(commands)
 
@@ -50,25 +43,17 @@ func TestProgram_LimitOutput(t *testing.T) {
 	{
 		p := NewProgram(3, nOutput)
 		stdout, _, _ := p.Run("mock_42", "mock", "stdout")
-		if stdout != "12345" {
-			t.Errorf("stdout: want %#v, got %#v", "12345", stdout)
-		}
+		be.Equal(t, stdout, "12345")
 	}
 	{
 		p := NewProgram(3, nOutput)
 		_, stderr, _ := p.Run("mock_42", "mock", "stderr")
-		if stderr != "12345" {
-			t.Errorf("stderr: want %#v, got %#v", "12345", stderr)
-		}
+		be.Equal(t, stderr, "12345")
 	}
 	{
 		p := NewProgram(3, nOutput)
 		stdout, stderr, _ := p.Run("mock_42", "mock", "outerr")
-		if stdout != "12345" {
-			t.Errorf("stdout: want %#v, got %#v", "12345", stdout)
-		}
-		if stderr != "12345" {
-			t.Errorf("stderr: want %#v, got %#v", "12345", stderr)
-		}
+		be.Equal(t, stdout, "12345")
+		be.Equal(t, stderr, "09876")
 	}
 }

@@ -4,6 +4,8 @@ import (
 	"io"
 	"net/http"
 	"testing"
+
+	"github.com/nalgeon/be"
 )
 
 func TestMockClient(t *testing.T) {
@@ -13,22 +15,14 @@ func TestMockClient(t *testing.T) {
 	req, _ := http.NewRequest("GET", url, nil)
 
 	resp, err := Do(req)
-	if err != nil {
-		t.Errorf("Do: unexpected error %v", err)
-	}
-	defer resp.Body.Close()
+	be.Err(t, err, nil)
+	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("Do: expected status code %d, got %d", http.StatusOK, resp.StatusCode)
-	}
+	be.Equal(t, resp.StatusCode, http.StatusOK)
 
 	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("io.ReadAll: unexpected error %v", err)
-	}
+	be.Err(t, err, nil)
 
 	want := "hello"
-	if string(body) != want {
-		t.Errorf("Do: expected %v, got %v", want, string(body))
-	}
+	be.Equal(t, string(body), want)
 }
