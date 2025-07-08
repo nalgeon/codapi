@@ -3,8 +3,7 @@ name: publish
 on:
     push:
         tags:
-            - "*"
-    workflow_dispatch:
+            - "v*.*.*"
 
 permissions:
     contents: write
@@ -19,7 +18,7 @@ jobs:
             - name: Setup Go
               uses: actions/setup-go@v5
               with:
-                  go-version: "stable"
+                  go-version-file: "go.mod"
 
             - name: Release and publish
               uses: goreleaser/goreleaser-action@v6

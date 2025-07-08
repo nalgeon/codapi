@@ -29,10 +29,13 @@ jobs:
             - name: Setup Go
               uses: actions/setup-go@v5
               with:
-                  go-version: "stable"
+                  go-version-file: "go.mod"
+
+            - name: Install linter
+              uses: golangci/golangci-lint-action@v8
 
             - name: Test and build
-              run: make test build
+              run: make vet lint test build
 
             - name: Upload artifact
               uses: actions/upload-artifact@v4
