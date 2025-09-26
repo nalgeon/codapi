@@ -114,6 +114,16 @@ func TestWriteFile(t *testing.T) {
 	be.Err(t, err, nil)
 	defer func() { _ = os.RemoveAll(dir) }()
 
+	t.Run("create nested dirs", func(t *testing.T) {
+		path := filepath.Join(dir, "a/b/c/file.txt")
+		err = WriteFile(path, "hello", 0444)
+		be.Err(t, err, nil)
+		got, err := os.ReadFile(path)
+		be.Err(t, err, nil)
+		want := []byte("hello")
+		be.Equal(t, got, want)
+	})
+
 	t.Run("text", func(t *testing.T) {
 		path := filepath.Join(dir, "data.txt")
 		err = WriteFile(path, "hello", 0444)

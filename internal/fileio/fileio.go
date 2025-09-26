@@ -71,9 +71,18 @@ func ReadJson[T any](path string) (T, error) {
 }
 
 // WriteFile writes the file to disk.
+// If the path directories do not exist, creates them.
 // The content can be text or binary (encoded as a data URL),
 // e.g. data:application/octet-stream;base64,MTIz
 func WriteFile(path, content string, perm fs.FileMode) (err error) {
+	// create parent directories if needed
+	dir := filepath.Dir(path)
+	err = os.MkdirAll(dir, 0755)
+	if err != nil {
+		return err
+	}
+
+	// write file content
 	var data []byte
 	if !strings.HasPrefix(content, "data:") {
 		// text file
