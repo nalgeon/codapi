@@ -1,0 +1,90 @@
+minimumLimaVersion: 2.0.0
+
+#base:
+#- template:_images/debian-13
+images:
+- location: https://cloud.debian.org/images/cloud/trixie/daily/latest/debian-13-genericcloud-amd64-daily.qcow2
+  arch: x86_64
+- location: https://cloud.debian.org/images/cloud/trixie/daily/latest/debian-13-genericcloud-arm64-daily.qcow2
+  arch: aarch64
+mountTypesUnsupported: [9p]
+# Mounts are disabled in this template, but can be enabled optionally.
+mounts: []
+# containerd is managed by Docker, not by Lima, so the values are set to false here.
+containerd:
+  system: false
+  user: false
+provision:
+- mode: system
+  script: |
+    #!/bin/sh
+    command -v ca-certificates curl make unzip >/dev/null 2>&1 && exit 0
+    sudo apt update && sudo apt install -y ca-certificates curl make unzip
+- mode: system
+  script: |
+    #!/bin/bash
+    set -eux -o pipefail
+    command -v docker >/dev/null 2>&1 && exit 0
+    export DEBIAN_FRONTEND=noninteractive
+    curl -fsSL https://get.docker.com | sh
+- mode: system
+  script: |
+    #!/bin/sh
+    id codapi >/dev/null 2>&1 && exit 0
+    sudo useradd --groups docker --shell /usr/bin/bash --create-home --home /opt/codapi codapi
+- mode: system
+  script: |
+    #!/bin/bash
+    set -eux -o pipefail
+    test -e /opt/codapi/codapi && exit 0
+    command -v jq || sudo apt install -y jq
+    sudo su - codapi
+    cd /opt/codapi
+    version=$(curl -fsSL https://api.github.com/repos/nalgeon/codapi/releases/latest | jq -r .tag_name | sed -e 's/v//')
+    case $(uname -m) in
+      x86_64)   arch=amd64;;
+      aarch64)  arch=arm64;;
+    esac
+    curl -fL -o codapi.tar.gz "https://github.com/nalgeon/codapi/releases/download/v$version/codapi_${version}_linux_${arch}.tar.gz"
+    tar xvzf codapi.tar.gz
+    rm -f codapi.tar.gz
+- mode: system
+  script: |
+    #!/bin/bash
+    set -eux -o pipefail
+    sudo su - codapi
+    cd /opt/codapi
+    docker build --file sandboxes/ash/Dockerfile --tag codapi/ash:latest sandboxes/ash
+- mode: system
+  script: |
+    #!/bin/sh
+    sudo mv /opt/codapi/codapi.service /etc/systemd/system/
+    sudo chown root:root /etc/systemd/system/codapi.service
+    sudo systemctl enable codapi.service
+    sudo systemctl start codapi.service
+probes:
+- script: |
+    #!/bin/bash
+    set -eux -o pipefail
+    if ! timeout 30s bash -c "until command -v docker >/dev/null 2>&1; do sleep 3; done"; then
+      echo >&2 "docker is not installed yet"
+      exit 1
+    fi
+    if ! timeout 30s bash -c "until pgrep dockerd; do sleep 3; done"; then
+      echo >&2 "dockerd is not running"
+      exit 1
+    fi
+    if ! timeout 30s bash -c "until test -e /opt/codapi; do sleep 3; done"; then
+      echo >&2 "codapi is not installed yet"
+      exit 1
+    fi
+    if ! timeout 30s bash -c "until pgrep codapi; do sleep 3; done"; then
+      echo >&2 "codapi is not running"
+      exit 1
+    fi
+  hint: See "/var/log/cloud-init-output.log" in the guest
+message: |
+  To verify that Codapi is working, run the following commands:
+  ------
+  curl -H "content-type: application/json" -d '{ "sandbox": "ash", "command": "run", "files": {"": "echo hello" }}' http://localhost:1313/v1/exec
+  ------
