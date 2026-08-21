@@ -34,11 +34,10 @@ func Validate(in engine.Request) error {
 // Allows no more than pool.Size() concurrent workers at any given time.
 // The request must already be validated by Validate().
 func Exec(in engine.Request) engine.Execution {
-	err := semaphore.Acquire()
-	defer semaphore.Release()
-	if err == ErrBusy {
+	if err := semaphore.Acquire(); err == ErrBusy {
 		return engine.Fail(in.ID, engine.ErrBusy)
 	}
+	defer semaphore.Release()
 	start := time.Now()
 	engine := engines[in.Sandbox][in.Command]
 	out := engine.Exec(in)
