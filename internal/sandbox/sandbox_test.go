@@ -74,8 +74,11 @@ func TestExec(t *testing.T) {
 		be.Equal(t, out.Stdout, "hello")
 		be.Equal(t, out.Stderr, "")
 		be.Equal(t, out.Err, nil)
+		// the worker returns its token when it is done
+		be.Equal(t, semaphore.Size(), cfg.PoolSize)
 	})
 	t.Run("busy", func(t *testing.T) {
+		defer func() { _ = ApplyConfig(cfg) }()
 		for i := 0; i < cfg.PoolSize; i++ {
 			_ = semaphore.Acquire()
 		}
@@ -88,6 +91,12 @@ func TestExec(t *testing.T) {
 			},
 		}
 		out := Exec(req)
+		be.Err(t, out.Err, engine.ErrBusy)
+		// a rejected request must not release a token it never acquired
+		be.Equal(t, semaphore.Size(), 0)
+		// otherwise the next request picks up the donated token
+		// and runs while the pool is still fully occupied
+		out = Exec(req)
 		be.Err(t, out.Err, engine.ErrBusy)
 	})
 }
