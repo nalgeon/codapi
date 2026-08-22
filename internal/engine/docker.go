@@ -309,20 +309,32 @@ func dockerRunArgs(box *config.Box, step *config.Step, req Request, dir string) 
 
 // dockerExecArgs prepares the arguments for the `docker exec` command.
 func dockerExecArgs(step *config.Step, req Request) []string {
-	// :name means executing in the container passed in the request
-	box := strings.Replace(step.Box, ":name", req.ID, 1)
+	container := containerName(req, step)
 	return []string{
 		actionExec, "--interactive",
 		"--user", step.User,
-		box,
+		container,
 	}
 }
 
 // dockerStopArgs prepares the arguments for the `docker stop` command.
 func dockerStopArgs(step *config.Step, req Request) []string {
-	// :name means executing in the container passed in the request
-	box := strings.Replace(step.Box, ":name", req.ID, 1)
-	return []string{actionStop, box}
+	container := containerName(req, step)
+	return []string{actionStop, container}
+}
+
+// containerName returns the name of the container for the step.
+func containerName(req Request, step *config.Step) string {
+	if step.Box == ":name" {
+		return req.ID
+	}
+	if req.Version != "" {
+		return step.Box + "-" + req.Version
+	}
+	if step.Version != "" {
+		return step.Box + "-" + step.Version
+	}
+	return step.Box
 }
 
 // filesReader creates a reader over an in-memory collection of files.

@@ -20,7 +20,7 @@ type Request struct {
 // GenerateID() sets a unique ID for the request.
 func (r *Request) GenerateID() {
 	if r.Version != "" {
-		r.ID = fmt.Sprintf("%s.%s_%s_%s", r.Sandbox, r.Version, r.Command, stringx.RandString(8))
+		r.ID = fmt.Sprintf("%s_%s_%s_%s", r.Sandbox, r.Version, r.Command, stringx.RandString(8))
 	} else {
 		r.ID = fmt.Sprintf("%s_%s_%s", r.Sandbox, r.Command, stringx.RandString(8))
 	}

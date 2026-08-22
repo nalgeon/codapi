@@ -17,7 +17,7 @@ func TestGenerateID(t *testing.T) {
 			Command: "run",
 		}
 		req.GenerateID()
-		be.True(t, strings.HasPrefix(req.ID, "python.dev_run_"))
+		be.True(t, strings.HasPrefix(req.ID, "python_dev_run_"))
 	})
 	t.Run("without version", func(t *testing.T) {
 		req := Request{
