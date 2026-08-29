@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -176,8 +177,30 @@ func readConfig(path string) (*Config, error) {
 	}
 	if cfg.Docker == nil {
 		cfg.Docker = &Docker{Bin: "docker"}
-	} else if cfg.Docker.Bin == "" {
-		cfg.Docker.Bin = "docker"
+	} else {
+		if cfg.Docker.Bin == "" {
+			cfg.Docker.Bin = "docker"
+		} else {
+			bin := cfg.Docker.Bin
+			_, err := exec.LookPath(bin)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if cfg.Docker.Tmp == "" {
+			cfg.Docker.Tmp = tempDir()
+		} else {
+			tmp := cfg.Docker.Tmp
+			dir, err := expandTilde(tmp)
+			if err != nil {
+				return nil, err
+			}
+			err = os.MkdirAll(dir, 0o755)
+			if err != nil {
+				return nil, err
+			}
+			cfg.Docker.Tmp = dir
+		}
 	}
 
 	return cfg, err
@@ -230,6 +253,24 @@ func readBoxesFile(path string) (map[string]*Box, error) {
 	}
 
 	return boxes, err
+}
+
+// tempDir returns the directory to use for temporary files.
+var tempDir = os.TempDir
+
+// userHomeDir returns the current user's home directory.
+var userHomeDir = os.UserHomeDir
+
+// expandTilde expands strings like "~/.local" with the path.
+func expandTilde(dir string) (string, error) {
+	if strings.HasPrefix(dir, "~/") {
+		homeDir, err := userHomeDir()
+		if err != nil {
+			return "", err
+		}
+		dir = strings.Replace(dir, "~", homeDir, 1)
+	}
+	return dir, nil
 }
 
 // readCommands reads command configs from a set of JSON files in the given path.

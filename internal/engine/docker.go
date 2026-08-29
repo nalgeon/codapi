@@ -32,18 +32,19 @@ type Docker struct {
 	cfg *config.Config
 	cmd *config.Command
 	exe string // docker
+	tmp string // TMPDIR
 }
 
 // NewDocker creates a new Docker engine for a specific command.
 func NewDocker(cfg *config.Config, sandbox, command string) Engine {
 	cmd := cfg.Commands[sandbox][command]
-	return &Docker{cfg, cmd, cfg.Docker.Bin}
+	return &Docker{cfg, cmd, cfg.Docker.Bin, cfg.Docker.Tmp}
 }
 
 // Exec executes the command and returns the output.
 func (e *Docker) Exec(req Request) Execution {
 	// all steps operate in the same temp directory
-	dir, err := fileio.MkdirTemp(0777)
+	dir, err := fileio.MkdirTemp(e.tmp, 0777)
 	if err != nil {
 		err = NewExecutionError("create temp dir", err)
 		return Fail(req.ID, err)

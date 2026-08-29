@@ -120,6 +120,7 @@ type HTTP struct {
 // A Docker describes Docker engine settings.
 type Docker struct {
 	Bin string `json:"bin"`
+	Tmp string `json:"tmp"`
 }
 
 // setBoxDefaults sets default box properties

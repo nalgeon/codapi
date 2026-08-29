@@ -141,8 +141,8 @@ func JoinDir(dir string, name string) (string, error) {
 
 // MkdirTemp creates a new temporary directory with given permissions
 // and returns the pathname of the new directory.
-func MkdirTemp(perm fs.FileMode) (string, error) {
-	dir, err := os.MkdirTemp("", "")
+func MkdirTemp(dir string, perm fs.FileMode) (string, error) {
+	dir, err := os.MkdirTemp(dir, "")
 	if err != nil {
 		return "", err
 	}

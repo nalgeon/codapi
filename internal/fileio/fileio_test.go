@@ -281,7 +281,7 @@ func TestJoinDir(t *testing.T) {
 func TestMkdirTemp(t *testing.T) {
 	t.Run("default permissions", func(t *testing.T) {
 		const perm = 0755
-		dir, err := MkdirTemp(perm)
+		dir, err := MkdirTemp("", perm)
 		be.Err(t, err, nil)
 		defer func() { _ = os.Remove(dir) }()
 
@@ -292,7 +292,7 @@ func TestMkdirTemp(t *testing.T) {
 
 	t.Run("non-default permissions", func(t *testing.T) {
 		const perm = 0777
-		dir, err := MkdirTemp(perm)
+		dir, err := MkdirTemp(t.TempDir(), perm)
 		be.Err(t, err, nil)
 		defer func() { _ = os.Remove(dir) }()
 
